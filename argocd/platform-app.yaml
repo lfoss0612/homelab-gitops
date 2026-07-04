@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lfoss0612/homelab-gitops.git
+    targetRevision: HEAD
+    path: argocd/platform
+    # recurse stays off so platform/pending/ (apps with credentials that are
+    # not yet externalized) is NOT synced from git.
+    directory:
+      recurse: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      # prune intentionally disabled: removing an app manifest from git will
+      # not cascade-delete a live platform app. Enable once confident.
+      prune: false
+      selfHeal: true

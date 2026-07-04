@@ -1,0 +1,14 @@
+# code-interpreter MCP server
+# Code interpreter MCP server (stdio transport).
+
+image:
+  repository: mcp/mcp-code-interpreter
+  tag: latest
+  pullPolicy: Always
+
+# stdio-only server: no network endpoint; kept alive via stdin/tty.
+stdio: true
+containerPort: null
+
+service:
+  enabled: false

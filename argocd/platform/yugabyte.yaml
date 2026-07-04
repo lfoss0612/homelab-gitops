@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: yugabyte
+  namespace: argocd
+spec:
+  destination:
+    namespace: yugabytedb
+    server: https://kubernetes.default.svc
+  project: yugabyte
+  source:
+    chart: yugabyte
+    helm:
+      parameters:
+        - name: replicas.master
+          value: "1"
+        - name: replicas.totalMasters
+          value: "1"
+        - name: replicas.tserver
+          value: "1"
+        - name: master.gflags.master_enable_universe_uuid_heartbeat_check
+          value: "false"
+      values: |
+        serviceEndpoints:
+          - name: "yb-master-ui"
+            type: LoadBalancer
+            scope: "AZ"
+            annotations: {}
+            clusterIP: ""
+            externalTrafficPolicy: "Cluster"
+            app: "yb-master"
+            loadBalancerIP: ""
+            ports:
+              http-ui: "7000"
+            extraArgs: {}
+          - name: "yb-tserver-service"
+            type: LoadBalancer
+            scope: "AZ"
+            annotations: {}
+            clusterIP: ""
+            externalTrafficPolicy: "Cluster"
+            app: "yb-tserver"
+            loadBalancerIP: ""
+            ports:
+              tcp-yql-port: "9042"
+              tcp-yedis-port: "6379"
+              tcp-ysql-port: "5433"
+            extraArgs: {}
+          - name: "yugabyted-ui-service"
+            type: LoadBalancer
+            scope: "AZ"
+            annotations: {}
+            clusterIP: ""
+            externalTrafficPolicy: "Cluster"
+            app: "yb-master"
+            loadBalancerIP: ""
+            sessionAffinity: ClientIP
+            ports:
+              yugabyted-ui: "15433"
+            extraArgs: {}
+    repoURL: https://charts.yugabyte.com
+    targetRevision: 2025.2.2
+  syncPolicy:
+    automated:
+      selfHeal: true

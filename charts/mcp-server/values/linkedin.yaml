@@ -1,0 +1,27 @@
+# linkedin MCP server
+# LinkedIn MCP server, pinned release. Streamable HTTP on :8000 when
+# TRANSPORT=streamable-http.
+
+image:
+  repository: stickerdaniel/linkedin-mcp-server
+  tag: 1.4.0
+  pullPolicy: IfNotPresent
+
+containerPort: 8000
+
+env:
+  - name: TRANSPORT
+    value: 'streamable-http'
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic linkedin-mcp-env \
+#     --from-literal=LINKEDIN_COOKIE=...
+envFromSecrets:
+  - linkedin-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: linkedin.mcp.homelab.local
+  tls:
+    enabled: false

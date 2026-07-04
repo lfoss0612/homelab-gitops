@@ -1,0 +1,40 @@
+# NOT SYNCED FROM GIT (pending/ is excluded from the platform root app).
+# The live postgrest Application carries the DB connection string (with
+# password) and the JWT secret inline; the colearendt/postgrest chart requires
+# both as literal values (it renders its own Secret from them - no
+# existing-secret support), so they cannot be committed to this public repo.
+#
+# Options to bring postgrest under git management:
+#   a) keep managing this app directly in Argo CD (current state), or
+#   b) supply postgrest.dbUri / postgrest.jwtSecret through a values source
+#      kept out of this repo, or switch to a chart that supports secret refs.
+# After replacing the placeholders appropriately, move this file up one level
+# into argocd/platform/.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgrest
+  namespace: argocd
+spec:
+  destination:
+    namespace: postgrest
+    server: https://kubernetes.default.svc
+  project: ai
+  source:
+    chart: postgrest
+    helm:
+      parameters:
+        - name: postgrest.dbUri
+          value: postgresql://authenticator:<REPLACE_ME>@10.42.0.100:5433/chinook
+        - name: postgrest.jwtSecret
+          value: <REPLACE_ME>
+        - name: service.type
+          value: LoadBalancer
+    repoURL: https://colearendt.github.io/helm
+    targetRevision: '*'
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

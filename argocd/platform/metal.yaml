@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metal
+  namespace: argocd
+spec:
+  destination:
+    namespace: metallb-system
+    server: https://kubernetes.default.svc
+  project: add-ons
+  source:
+    chart: metallb
+    helm:
+      parameters:
+        - name: prometheus.serviceMonitor.enabled
+          value: "true"
+        - name: prometheus.podMonitor.enabled
+          value: "false"
+        - name: prometheus.namespace
+          value: cattle-monitoring-system
+        - name: prometheus.serviceAccount
+          value: rancher-monitoring-prometheus
+    repoURL: https://metallb.github.io/metallb
+    targetRevision: '*'
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

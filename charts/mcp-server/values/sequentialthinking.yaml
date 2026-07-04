@@ -1,0 +1,14 @@
+# sequentialthinking MCP server
+# Reference sequential-thinking server (stdio transport).
+
+image:
+  repository: mcp/sequentialthinking
+  tag: latest
+  pullPolicy: Always
+
+# stdio-only server: no network endpoint; kept alive via stdin/tty.
+stdio: true
+containerPort: null
+
+service:
+  enabled: false

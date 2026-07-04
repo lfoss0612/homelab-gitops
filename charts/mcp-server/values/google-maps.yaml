@@ -1,0 +1,20 @@
+# google-maps MCP server
+# Google Maps MCP server (stdio transport).
+
+image:
+  repository: mcp/google-maps
+  tag: latest
+  pullPolicy: Always
+
+# stdio-only server: no network endpoint; kept alive via stdin/tty.
+stdio: true
+containerPort: null
+
+service:
+  enabled: false
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic google-maps-mcp-env \
+#     --from-literal=GOOGLE_MAPS_API_KEY=...
+envFromSecrets:
+  - google-maps-mcp-env

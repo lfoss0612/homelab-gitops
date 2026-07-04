@@ -1,0 +1,23 @@
+# grafana MCP server
+# Official Grafana MCP server. Serves streamable HTTP on :8000 by default.
+
+image:
+  repository: mcp/grafana
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8000
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic grafana-mcp-env \
+#     --from-literal=GRAFANA_URL=... \
+#     --from-literal=GRAFANA_SERVICE_ACCOUNT_TOKEN=...
+envFromSecrets:
+  - grafana-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: grafana.mcp.homelab.local
+  tls:
+    enabled: false

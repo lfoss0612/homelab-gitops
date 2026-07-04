@@ -1,0 +1,23 @@
+# proxmox MCP server
+# Proxmox MCP server (stdio transport).
+
+image:
+  repository: mcp/proxmox
+  tag: latest
+  pullPolicy: Always
+
+# stdio-only server: no network endpoint; kept alive via stdin/tty.
+stdio: true
+containerPort: null
+
+service:
+  enabled: false
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic proxmox-mcp-env \
+#     --from-literal=PROXMOX_HOST=... \
+#     --from-literal=PROXMOX_USER=... \
+#     --from-literal=PROXMOX_TOKEN_NAME=... \
+#     --from-literal=PROXMOX_TOKEN_VALUE=...
+envFromSecrets:
+  - proxmox-mcp-env

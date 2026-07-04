@@ -1,0 +1,22 @@
+# huggingface MCP server
+# Hugging Face MCP server. Serves HTTP (web UI plus /mcp and /sse endpoints) on :3000.
+
+image:
+  repository: ghcr.io/evalstate/hf-mcp-server
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 3000
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic huggingface-mcp-env \
+#     --from-literal=HF_TOKEN=...
+envFromSecrets:
+  - huggingface-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: huggingface.mcp.homelab.local
+  tls:
+    enabled: false

@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rancher-monitoring
+  namespace: argocd
+spec:
+  destination:
+    namespace: cattle-monitoring-system
+    server: https://kubernetes.default.svc
+  project: system
+  source:
+    chart: rancher-monitoring
+    helm:
+      parameters:
+        - name: global.cattle.psp.enabled
+          value: "false"
+        - name: grafana.service.type
+          value: LoadBalancer
+        - name: grafana.service.loadBalancerIP
+          value: 10.2.6.10
+        - name: prometheus.prometheusSpec.retention
+          value: 10d
+        - name: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName
+          value: longhorn
+        - name: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage
+          value: 50Gi
+    repoURL: https://charts.rancher.io
+    targetRevision: 109.0.2+up80.9.1-rancher.8
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

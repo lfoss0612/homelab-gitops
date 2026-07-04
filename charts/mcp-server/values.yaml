@@ -1,0 +1,95 @@
+# Default values for the mcp-server chart.
+# Each MCP server is deployed as its own Argo CD Application using one of the
+# per-server values files in values/, layered on top of these defaults.
+
+# Resource name defaults to the Helm release name (the Argo CD app name).
+nameOverride: ""
+
+replicaCount: 1
+
+image:
+  repository: ""
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# Override the image entrypoint/args if needed.
+command: []
+args: []
+
+# Set for servers that speak HTTP/SSE. Leave null for stdio-only servers.
+containerPort: 8080
+
+# stdio-only MCP images exit immediately without an attached stdin; setting
+# stdio: true keeps the container alive (stdin + tty). Such servers have no
+# network endpoint - disable the service for them too.
+stdio: false
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+
+# Plain (non-secret) environment variables, standard k8s EnvVar format.
+env: []
+
+# Names of pre-existing Secrets to load wholesale via envFrom.
+# Create these out-of-band (kubectl, sealed-secrets, external-secrets, ...).
+envFromSecrets: []
+
+# Alternatively let the chart create a Secret from inline data.
+# Prefer envFromSecrets + an external secret manager; do not commit real
+# credentials to git.
+secret:
+  create: false
+  data: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: ""
+  path: /
+  pathType: Prefix
+  tls:
+    enabled: false
+    secretName: ""
+
+# HTTP health probes. Enable only for servers that expose an HTTP health
+# endpoint (the ghcr.io/lfoss0612/mcp-* wrapper images serve /healthz).
+probes:
+  enabled: false
+  path: /healthz
+  initialDelaySeconds: 5
+  periodSeconds: 15
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+serviceAccount:
+  create: false
+  name: ""
+  automountToken: false
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop: ["ALL"]
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

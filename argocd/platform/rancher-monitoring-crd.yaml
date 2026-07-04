@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+    - pre-delete-finalizer.argocd.argoproj.io
+    - pre-delete-finalizer.argocd.argoproj.io/cleanup
+  name: rancher-monitoring-crd
+  namespace: argocd
+spec:
+  destination:
+    namespace: cattle-monitoring-system
+    server: https://kubernetes.default.svc
+  project: system
+  source:
+    path: charts/rancher-monitoring-crd/108.0.0+up77.9.1-rancher.6
+    repoURL: https://github.com/rancher/charts
+    targetRevision: release-v2.14

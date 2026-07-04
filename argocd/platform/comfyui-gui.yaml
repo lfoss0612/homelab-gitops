@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: comfyui-gui
+  namespace: argocd
+spec:
+  destination:
+    namespace: comfyui
+    server: https://kubernetes.default.svc
+  project: ai
+  source:
+    path: comfyui-gui/chart
+    repoURL: https://github.com/lfoss0612/comfyui-helm-chart.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      enabled: true

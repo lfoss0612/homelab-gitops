@@ -1,0 +1,28 @@
+# argocd MCP server
+# npm wrapper image (dockerfiles/argocd) bridging argocd-mcp to streamable
+# HTTP via supergateway.
+
+image:
+  repository: ghcr.io/lfoss0612/mcp-argocd
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic argocd-mcp-env \
+#     --from-literal=ARGOCD_BASE_URL=... \
+#     --from-literal=ARGOCD_API_TOKEN=...
+envFromSecrets:
+  - argocd-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: argocd.mcp.homelab.local
+  tls:
+    enabled: false
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

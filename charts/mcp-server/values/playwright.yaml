@@ -1,0 +1,35 @@
+# playwright MCP server
+# Microsoft Playwright MCP. Runs a headless browser; needs relaxed
+# security context and more memory than the chart defaults.
+
+image:
+  repository: mcr.microsoft.com/playwright/mcp
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+args:
+  - '--headless'
+  - '--host'
+  - '0.0.0.0'
+  - '--port'
+  - '8080'
+
+ingress:
+  enabled: false
+  className: nginx
+  host: playwright.mcp.homelab.local
+  tls:
+    enabled: false
+
+# Browser needs its own user setup and sandboxing; the hardened defaults break it.
+podSecurityContext: {}
+securityContext: {}
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    memory: 2Gi

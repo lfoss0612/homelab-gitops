@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+    - pre-delete-finalizer.argocd.argoproj.io
+    - pre-delete-finalizer.argocd.argoproj.io/cleanup
+  name: longhorn
+  namespace: argocd
+spec:
+  destination:
+    namespace: longhorn-system
+    server: https://kubernetes.default.svc
+  project: add-ons
+  source:
+    chart: longhorn
+    helm:
+      parameters:
+        - name: persistence.reclaimPolicy
+          value: Retain
+        - name: longhornUI.replicas
+          value: "2"
+        - name: defaultSettings.defaultDataPath
+          value: /mnt/longhorn
+        - name: defaultSettings.defaultReplicaCount
+          value: "1"
+        - name: persistence.defaultClassReplicaCount
+          value: "2"
+        - name: metrics.serviceMonitor.enabled
+          value: "true"
+    repoURL: https://charts.longhorn.io
+    targetRevision: 1.12.0

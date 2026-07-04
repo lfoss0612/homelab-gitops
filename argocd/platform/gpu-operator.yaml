@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+    - post-delete-finalizer.argocd.argoproj.io
+    - post-delete-finalizer.argocd.argoproj.io/cleanup
+  name: gpu-operator
+  namespace: argocd
+spec:
+  destination:
+    namespace: gpu-operator
+    server: https://kubernetes.default.svc
+  project: add-ons
+  source:
+    chart: gpu-operator
+    helm:
+      parameters:
+        - name: driver.enabled
+          value: "false"
+        - name: toolkit.enabled
+          value: "false"
+        - name: devicePlugin.config.name
+          value: time-slicing-config
+    repoURL: https://helm.ngc.nvidia.com/nvidia
+    targetRevision: v25.10.1

@@ -1,0 +1,30 @@
+# Generic wrapper: run any stdio npm MCP server as a streamable-HTTP service
+# via supergateway. Prefer the pinned per-server Dockerfiles in this directory;
+# this generic file is for experimenting with new servers.
+#
+# Example:
+#   docker build \
+#     --build-arg NPM_PACKAGE=@paypal/mcp \
+#     --build-arg NPM_VERSION=1.8.1 \
+#     --build-arg STDIO_CMD="mcp --tools=all" \
+#     -f dockerfiles/Dockerfile.npm-wrapper \
+#     -t ghcr.io/lfoss0612/mcp-paypal:latest .
+FROM node:22-alpine
+
+ARG NPM_PACKAGE
+ARG NPM_VERSION=
+ARG STDIO_CMD
+
+RUN if [ -z "$NPM_PACKAGE" ] || [ -z "$STDIO_CMD" ]; then \
+      echo "NPM_PACKAGE and STDIO_CMD build args are required" && exit 1; \
+    fi
+RUN npm install --global supergateway@3 "${NPM_PACKAGE}${NPM_VERSION:+@${NPM_VERSION}}" \
+    && npm cache clean --force
+
+RUN addgroup -S mcp && adduser -S -u 10001 -G mcp mcp
+USER mcp
+WORKDIR /home/mcp
+
+ENV MCP_STDIO_CMD=${STDIO_CMD}
+EXPOSE 8080
+CMD ["sh", "-c", "exec supergateway --stdio \"$MCP_STDIO_CMD\" --outputTransport streamableHttp --port 8080 --healthEndpoint /healthz"]

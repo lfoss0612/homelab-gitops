@@ -1,0 +1,20 @@
+# github MCP server
+# Official GitHub MCP server (stdio transport).
+
+image:
+  repository: ghcr.io/github/github-mcp-server
+  tag: latest
+  pullPolicy: Always
+
+# stdio-only server: no network endpoint; kept alive via stdin/tty.
+stdio: true
+containerPort: null
+
+service:
+  enabled: false
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic github-mcp-env \
+#     --from-literal=GITHUB_PERSONAL_ACCESS_TOKEN=...
+envFromSecrets:
+  - github-mcp-env

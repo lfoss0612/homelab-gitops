@@ -1,0 +1,21 @@
+# dockerhub MCP server
+# Docker Hub MCP server (stdio transport).
+
+image:
+  repository: mcp/dockerhub
+  tag: latest
+  pullPolicy: Always
+
+# stdio-only server: no network endpoint; kept alive via stdin/tty.
+stdio: true
+containerPort: null
+
+service:
+  enabled: false
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic dockerhub-mcp-env \
+#     --from-literal=HUB_USERNAME=... \
+#     --from-literal=HUB_PAT_TOKEN=...
+envFromSecrets:
+  - dockerhub-mcp-env

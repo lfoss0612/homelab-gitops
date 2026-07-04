@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mcp-server
+description: Reusable Helm chart for deploying a single MCP server; one Argo CD Application per server instantiates it with a values file from values/
+type: application
+version: 0.2.0
+appVersion: "0.2.0"

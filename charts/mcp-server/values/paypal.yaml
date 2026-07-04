@@ -1,0 +1,28 @@
+# paypal MCP server
+# npm wrapper image (dockerfiles/paypal) bridging @paypal/mcp to streamable
+# HTTP via supergateway. Built and pushed by .github/workflows/build-mcp-wrappers.yaml.
+
+image:
+  repository: ghcr.io/lfoss0612/mcp-paypal
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic paypal-mcp-env \
+#     --from-literal=PAYPAL_ACCESS_TOKEN=... \
+#     --from-literal=PAYPAL_ENVIRONMENT=...
+envFromSecrets:
+  - paypal-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: paypal.mcp.homelab.local
+  tls:
+    enabled: false
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

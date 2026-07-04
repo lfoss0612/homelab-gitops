@@ -1,0 +1,27 @@
+# prometheus MCP server
+# Prometheus MCP server in HTTP transport mode. Adjust PROMETHEUS_URL to
+# your in-cluster Prometheus service.
+
+image:
+  repository: ghcr.io/pab1it0/prometheus-mcp-server
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+env:
+  - name: PROMETHEUS_URL
+    value: 'http://prometheus-server.monitoring.svc.cluster.local:9090'
+  - name: PROMETHEUS_MCP_SERVER_TRANSPORT
+    value: 'http'
+  - name: PROMETHEUS_MCP_BIND_HOST
+    value: '0.0.0.0'
+  - name: PROMETHEUS_MCP_BIND_PORT
+    value: '8080'
+
+ingress:
+  enabled: false
+  className: nginx
+  host: prometheus.mcp.homelab.local
+  tls:
+    enabled: false

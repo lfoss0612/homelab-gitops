@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: langflow-ide
+  namespace: argocd
+spec:
+  destination:
+    namespace: langflow
+    server: https://kubernetes.default.svc
+  project: ai
+  source:
+    chart: langflow-ide
+    helm:
+      parameters:
+        - name: nameOverride
+          value: langflow-service
+        - name: langflow.frontend.service.type
+          value: LoadBalancer
+    repoURL: https://langflow-ai.github.io/langflow-helm-charts
+    targetRevision: '*'
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,94 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  name: add-ons
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - name: in-cluster
+      namespace: '*'
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - https://metallb.github.io/metallb
+    - https://git.rancher.io/charts
+    # added: repos used by apps in this project but missing from the whitelist
+    - https://charts.jetstack.io
+    - https://helm.ngc.nvidia.com/nvidia
+    - https://charts.longhorn.io
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  name: ai
+  namespace: argocd
+spec:
+  destinations:
+    - name: in-cluster
+      namespace: '*'
+      server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - https://langflow-ai.github.io/langflow-helm-charts
+    - https://colearendt.github.io/helm
+    - ghcr.io/berriai
+    # added: repos used by apps in this project but missing from the whitelist
+    # (comfyui-gui and open-webui showed sync status Unknown because of this)
+    - https://github.com/lfoss0612/comfyui-helm-chart.git
+    - https://helm.openwebui.com/
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  name: system
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - name: in-cluster
+      namespace: '*'
+      server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - https://charts.rancher.io
+    # added: repos used by apps in this project but missing from the whitelist
+    # (rancher showed sync status Unknown because of this)
+    - https://releases.rancher.com/server-charts/latest
+    - https://github.com/rancher/charts
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  name: yugabyte
+  namespace: argocd
+spec:
+  destinations:
+    - name: in-cluster
+      namespace: '*'
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - https://charts.yugabyte.com
+    - https://helm.runix.net
+  syncWindows:
+    - duration: 1h
+      kind: allow
+      namespaces:
+        - yugabytedb
+      schedule: '* * * * *'
+      timeZone: America/Detroit

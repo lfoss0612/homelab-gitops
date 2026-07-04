@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: open-webui
+  namespace: argocd
+spec:
+  destination:
+    namespace: open-webui
+    server: https://kubernetes.default.svc
+  project: ai
+  source:
+    chart: open-webui
+    helm:
+      parameters:
+        - name: persistence.storageClass
+          value: longhorn
+        - name: ollama.persistentVolume.enabled
+          value: "true"
+        - name: ollama.persistentVolume.size
+          value: "644245094400"
+        - name: ollama.runtimeClassName
+          value: nvidia
+        - name: persistence.size
+          value: 10Gi
+        - name: ollama.extraEnv[0].name
+          value: OLLAMA_NUM_PARALLEL
+        - forceString: true
+          name: ollama.extraEnv[0].value
+          value: "2"
+        - name: ollama.extraEnv[1].name
+          value: OMP_NUM_THREADS
+        - forceString: true
+          name: ollama.extraEnv[1].value
+          value: "8"
+        - name: runtimeClassName
+          value: nvidia
+        - name: replicaCount
+          value: "1"
+        - name: service.type
+          value: LoadBalancer
+    repoURL: https://helm.openwebui.com/
+    targetRevision: '*'
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
