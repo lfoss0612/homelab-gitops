@@ -67,12 +67,16 @@ Notes:
 - The AppProject `sourceRepos` whitelists were extended to include the chart
   repos their apps actually use — `rancher` and `comfyui-gui` were stuck in
   sync status `Unknown` because their source repos were not whitelisted.
-- `litellm` and `postgrest` live in `argocd/pending/` and are **not**
-  synced from git (no `platform-<namespace>` app points at them): their
-  Application specs embed credentials (litellm master
-  key and postgres passwords; postgrest DB URI and JWT secret) and their charts
-  require those as literal Helm values. They remain managed directly in Argo
-  CD, unchanged. Each pending file documents how to migrate it.
+- `litellm` is git-managed (`argocd/litellm/`, wrapper `platform-litellm`). Its
+  secrets are **not** inlined — they are standalone Secrets in the `litellm`
+  namespace (`litellm-masterkey`, `litellm-postgresql-ext`, `litellm-dbcredentials`)
+  referenced via `masterkeySecretName` and `postgresql.auth.existingSecret`,
+  created out of band like the `mcp-*` servers.
+- `postgrest` still lives in `argocd/pending/` and is **not** synced from git:
+  the colearendt/postgrest chart renders its Secret from literal Helm values
+  (`postgrest.dbUri`, `postgrest.jwtSecret`) with no `existingSecret` support, so
+  it needs a render-time secret plugin (SOPS/argocd-vault-plugin) before it can
+  be committed. It remains managed directly in Argo CD, unchanged.
 
 The root app syncs the per-server Applications; each deploys into the `mcp`
 namespace. Servers that need credentials expect a pre-created Secret named

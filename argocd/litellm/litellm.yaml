@@ -1,23 +1,10 @@
-# NOT SYNCED FROM GIT (pending/ is excluded from the platform root app).
-# The live litellm Application in Argo CD carries real credentials inline
-# (masterkey, postgresql passwords) which must not be committed to this public
-# repo. The litellm-helm chart generates its k8s Secrets FROM these values, so
-# they cannot simply be omitted (the chart would regenerate them with defaults
-# and break the running DB).
-#
-# To bring litellm under git management, either:
-#   a) keep managing this app directly in Argo CD (current state), or
-#   b) move the masterkey to an external secret (chart supports
-#      masterkeySecretName/masterkeySecretKey pointing at a NEW secret you
-#      create, e.g. litellm-masterkey-external) and supply the postgres
-#      passwords through a values source kept out of this repo.
-# After replacing the placeholders appropriately, move this file up one level
-# into argocd/platform/.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: litellm
   namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform
 spec:
   destination:
     namespace: litellm
@@ -33,6 +20,11 @@ spec:
   source:
     chart: litellm-helm
     helm:
+      # Secrets are NOT inlined. They live as standalone Kubernetes Secrets in
+      # the litellm namespace (created out of band, like the mcp-* servers):
+      #   litellm-masterkey       (key: masterkey)               -> master key
+      #   litellm-postgresql-ext  (password, postgres-password)  -> postgres auth
+      #   litellm-dbcredentials   (username, password)           -> litellm DB login
       parameters:
         - name: ingress.hosts[0].host
           value: litellm.home.lan
@@ -43,8 +35,10 @@ spec:
         - name: proxy_config.model_list
         - name: proxy_config.general_settings.store_model_in_db
           value: "True"
-        - name: masterkey
-          value: <REPLACE_ME>
+        - name: masterkeySecretName
+          value: litellm-masterkey
+        - name: masterkeySecretKey
+          value: masterkey
         - name: service.type
           value: LoadBalancer
         - name: postgresql.image.registry
@@ -53,10 +47,8 @@ spec:
           value: bitnami/postgresql
         - name: postgresql.image.tag
           value: latest
-        - name: postgresql.auth.postgres-password
-          value: <REPLACE_ME>
-        - name: postgresql.auth.postgresPassword
-          value: <REPLACE_ME>
+        - name: postgresql.auth.existingSecret
+          value: litellm-postgresql-ext
     repoURL: ghcr.io/berriai
     targetRevision: 1.x.x
   syncPolicy:
