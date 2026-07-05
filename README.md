@@ -11,6 +11,9 @@ nested app-of-apps pattern. Two trees:
 - **mcp-servers** — one Argo CD Application per MCP server, all instantiating a
   single reusable Helm chart, managed by the `mcp-servers` app-of-apps.
 
+See [docs/architecture.md](docs/architecture.md) for a visual diagram of the
+app-of-apps trees and the wrapper → workload mapping.
+
 ## Structure
 
 ```
