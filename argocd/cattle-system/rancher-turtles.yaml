@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rancher-turtles
+  namespace: argocd
+spec:
+  destination:
+    namespace: cattle-turtles-system
+    server: https://kubernetes.default.svc
+  project: system
+  source:
+    chart: rancher-turtles
+    helm:
+      parameters:
+        - name: global.cattle.systemDefaultRegistry
+          value: ""
+        - name: priorityClassName
+          value: rancher-critical
+        - name: features.no-cert-manager.enabled
+          value: "true"
+    repoURL: https://charts.rancher.io
+    targetRevision: 109.0.3+up0.26.3
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,31 @@
+# No Rancher feature flag exists to opt this out of Rancher's own
+# systemcharts management (unlike system-upgrade-controller). This chart
+# is tightly version-coupled to the Rancher server itself, so bump
+# targetRevision here manually whenever Rancher is upgraded, to avoid
+# Argo's pinned version drifting behind what the new Rancher expects.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rancher-webhook
+  namespace: argocd
+spec:
+  destination:
+    namespace: cattle-system
+    server: https://kubernetes.default.svc
+  project: system
+  source:
+    chart: rancher-webhook
+    helm:
+      parameters:
+        - name: global.cattle.systemDefaultRegistry
+          value: ""
+        - name: mcm.enabled
+          value: "true"
+        - name: priorityClassName
+          value: rancher-critical
+    repoURL: https://charts.rancher.io
+    targetRevision: 109.0.3+up0.10.7
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
