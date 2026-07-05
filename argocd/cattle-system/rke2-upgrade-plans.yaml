@@ -1,0 +1,67 @@
+# RKE2 system-upgrade-controller Plans.
+#
+# Pinned to an explicit version instead of a channel (was
+# channels/latest, which auto-advanced the cluster to RKE2 1.36 ahead
+# of Rancher's support matrix). Bump `version` deliberately, in lockstep
+# with the Rancher chart version in rancher.yaml, once Rancher supports
+# the target RKE2 minor.
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: server-plan
+  namespace: cattle-system
+spec:
+  concurrency: 1
+  cordon: true
+  drain:
+    deleteLocalData: true
+    force: true
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: In
+        values:
+          - "true"
+  serviceAccountName: system-upgrade
+  tolerations:
+    - effect: NoExecute
+      key: CriticalAddonsOnly
+      operator: Equal
+      value: "true"
+  upgrade:
+    image: rancher/rke2-upgrade
+  version: v1.36.1+rke2r2
+---
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: agent-plan
+  namespace: cattle-system
+spec:
+  concurrency: 1
+  cordon: true
+  drain:
+    disableEviction: true
+    force: true
+    skipWaitForDeleteTimeout: 60
+  jobActiveDeadlineSecs: 900
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: NotIn
+        values:
+          - "true"
+      - key: rke2-upgrade
+        operator: NotIn
+        values:
+          - disabled
+          - "false"
+  prepare:
+    args:
+      - prepare
+      - server-plan
+    image: rancher/rke2-upgrade
+  serviceAccountName: system-upgrade
+  upgrade:
+    image: rancher/rke2-upgrade
+  version: v1.36.1+rke2r2
