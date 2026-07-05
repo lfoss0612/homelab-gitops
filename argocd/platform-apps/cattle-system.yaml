@@ -11,8 +11,6 @@ spec:
     repoURL: https://github.com/lfoss0612/homelab-gitops.git
     targetRevision: HEAD
     path: argocd/cattle-system
-    directory:
-      recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

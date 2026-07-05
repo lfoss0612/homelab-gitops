@@ -13,8 +13,6 @@ spec:
     # root app-of-apps: creates the per-namespace platform-<ns> app-of-apps
     # (and the AppProjects) from argocd/platform-apps/.
     path: argocd/platform-apps
-    directory:
-      recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
