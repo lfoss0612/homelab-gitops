@@ -20,6 +20,15 @@ spec:
           value: "true"
     repoURL: https://charts.rancher.io
     targetRevision: 109.0.3+up0.26.3
+  ignoreDifferences:
+    # RBAC-aggregated ClusterRole: rules are populated by the API
+    # server's aggregation controller, not the chart, so this always
+    # differs from the rendered manifest. Harmless, permanent diff.
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: rancher-turtles-aggregated-manager-role
+      jsonPointers:
+        - /rules
   syncPolicy:
     automated:
       prune: true
