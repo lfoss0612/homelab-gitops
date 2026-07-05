@@ -1,0 +1,54 @@
+# Argo CD managing its own Helm release. Deliberately manual sync (no
+# syncPolicy.automated) - unlike other apps in this repo, a bad sync here
+# could break Argo CD itself with nothing else around to fix it. Review
+# the diff and sync by hand.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: system
+  source:
+    chart: argo-cd
+    helm:
+      valuesObject:
+        applicationSet:
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+        configs:
+          params:
+            server.insecure: true
+        controller:
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+        global:
+          cattle:
+            clusterId: local
+            clusterName: local
+            rkePathPrefix: ""
+            rkeWindowsPathPrefix: ""
+            systemProjectId: p-vsnqf
+            url: https://rancher.local
+        repoServer:
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+        server:
+          insecure: true
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+          service:
+            type: LoadBalancer
+    repoURL: https://argoproj.github.io/argo-helm
+    targetRevision: 9.5.19
