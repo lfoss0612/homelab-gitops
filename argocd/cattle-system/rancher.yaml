@@ -11,6 +11,11 @@ spec:
   source:
     chart: rancher
     helm:
+      # Rancher 2.14's chart declares kubeVersion "< 1.36.0-0", which blocks
+      # templating against this RKE2 1.36 cluster. Override the version Helm
+      # sees so the chart renders. NOTE: running Rancher 2.14 on K8s 1.36 is
+      # unsupported by SUSE until 2.15 GA / a 2.14.x+KDM backport adds 1.36.
+      kubeVersion: "1.35.0"
       parameters:
         - name: ingress.ingressClassName
           value: nginx
