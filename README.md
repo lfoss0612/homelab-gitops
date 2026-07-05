@@ -1,27 +1,33 @@
 # homelab-gitops
 
-GitOps repository for the homelab Kubernetes cluster, managed by Argo CD with
-an app-of-apps pattern. Two trees:
+GitOps repository for the homelab Kubernetes cluster, managed by Argo CD with a
+nested app-of-apps pattern. Two trees:
 
 - **platform** — the pre-existing cluster apps (cert-manager, longhorn,
-  rancher, gpu-operator, yugabyte, ...), exported from the live Argo CD.
+  rancher, gpu-operator, yugabyte, ...), exported from the live Argo CD and
+  organized **by namespace**. A root `platform` app-of-apps creates one
+  `platform-<namespace>` app-of-apps per cluster namespace, and each of those
+  syncs the workload Applications in `argocd/<namespace>/`.
 - **mcp-servers** — one Argo CD Application per MCP server, all instantiating a
-  single reusable Helm chart.
+  single reusable Helm chart, managed by the `mcp-servers` app-of-apps.
 
 ## Structure
 
 ```
 argocd/
-  platform-app.yaml      # app-of-apps: syncs argocd/platform/ (prune disabled)
-  platform/              # exported platform Applications + AppProjects
-    projects.yaml        # add-ons, ai, system, yugabyte AppProjects
-    pending/             # NOT synced: apps whose specs contain credentials
-  root-app.yaml          # app-of-apps: syncs everything under argocd/apps/
-  apps/mcp-<name>.yaml   # one Argo CD Application per server
-charts/mcp-server/       # reusable single-server Helm chart
-  values.yaml            # hardened defaults (security context, resources, ...)
-  values/<name>.yaml     # per-server overrides (image, port, secrets, ingress)
-  templates/             # Deployment, Service, Ingress, Secret, ServiceAccount
+  platform-app.yaml        # root app-of-apps: syncs argocd/platform-apps/
+  platform-apps/           # one app-of-apps per namespace, + AppProjects
+    projects.yaml          # add-ons, ai, system, yugabyte AppProjects
+    <namespace>.yaml       # app platform-<namespace> -> syncs argocd/<namespace>/
+  <namespace>/             # one dir per cluster namespace, holds its workloads
+    <app>.yaml             # e.g. yugabytedb/{yugabyte,pgadmin}.yaml
+  pending/                 # NOT synced: apps whose specs contain credentials
+  root-app.yaml            # app-of-apps: syncs everything under argocd/apps/
+  apps/mcp-<name>.yaml     # one Argo CD Application per server
+charts/mcp-server/         # reusable single-server Helm chart
+  values.yaml              # hardened defaults (security context, resources, ...)
+  values/<name>.yaml       # per-server overrides (image, port, secrets, ingress)
+  templates/               # Deployment, Service, Ingress, Secret, ServiceAccount
 dockerfiles/
   paypal/  monday/  argocd/   # pinned wrapper Dockerfiles for npm-only servers
   Dockerfile.npm-wrapper      # generic wrapper for experimenting with new servers
@@ -32,23 +38,35 @@ dockerfiles/
 ## Bootstrap
 
 ```sh
-kubectl apply -f argocd/platform-app.yaml   # adopt existing platform apps
-kubectl apply -f argocd/root-app.yaml       # deploy the MCP servers
+kubectl apply -f argocd/platform-app.yaml   # root; cascades to per-ns apps + workloads
+kubectl apply -f argocd/root-app.yaml       # deploy the MCP servers (app-of-apps)
 ```
+
+The `platform` root syncs `argocd/platform-apps/`, which creates the AppProjects
+(`sync-wave -1`, so they apply first) and the ten `platform-<namespace>`
+app-of-apps. Each of those adopts the workload Applications in its
+`argocd/<namespace>/` directory by name.
 
 ## Platform apps
 
-`argocd/platform/` holds the Application and AppProject definitions exported
-from the live cluster (2026-07-04), cleaned of runtime metadata. The platform
-root app adopts the existing live Applications by name; `prune` is disabled so
-deleting a manifest from git never cascade-deletes a running app.
+The platform Application and AppProject definitions were exported from the live
+cluster (2026-07-04), cleaned of runtime metadata, and organized by namespace:
+each `argocd/<namespace>/` directory holds the workload Application(s) that
+deploy into that namespace (e.g. `argocd/yugabytedb/` holds both `yugabyte` and
+`pgadmin`). The grouping app for a namespace is named `platform-<namespace>` to
+avoid colliding with a workload Application of the same name — every Argo CD
+Application lives in the `argocd` namespace regardless of where it deploys, so
+names must be unique cluster-wide. To change a workload's parameters, edit its
+manifest in `argocd/<namespace>/` and push; the parent (`selfHeal: true`) applies
+it. `prune` is disabled so deleting a manifest never cascade-deletes a live app.
 
 Notes:
 - The AppProject `sourceRepos` whitelists were extended to include the chart
   repos their apps actually use — `rancher` and `comfyui-gui` were stuck in
   sync status `Unknown` because their source repos were not whitelisted.
-- `litellm` and `postgrest` live in `argocd/platform/pending/` and are **not**
-  synced from git: their Application specs embed credentials (litellm master
+- `litellm` and `postgrest` live in `argocd/pending/` and are **not**
+  synced from git (no `platform-<namespace>` app points at them): their
+  Application specs embed credentials (litellm master
   key and postgres passwords; postgrest DB URI and JWT secret) and their charts
   require those as literal Helm values. They remain managed directly in Argo
   CD, unchanged. Each pending file documents how to migrate it.

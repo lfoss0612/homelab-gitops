@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform
+  name: platform-langflow
   namespace: argocd
   labels:
     app.kubernetes.io/part-of: platform
@@ -10,9 +10,7 @@ spec:
   source:
     repoURL: https://github.com/lfoss0612/homelab-gitops.git
     targetRevision: HEAD
-    # root app-of-apps: creates the per-namespace platform-<ns> app-of-apps
-    # (and the AppProjects) from argocd/platform-apps/.
-    path: argocd/platform-apps
+    path: argocd/langflow
     directory:
       recurse: false
   destination:
@@ -20,7 +18,5 @@ spec:
     namespace: argocd
   syncPolicy:
     automated:
-      # prune disabled: removing a manifest from git will not cascade-delete a
-      # live app. Enable once confident.
       prune: false
       selfHeal: true
