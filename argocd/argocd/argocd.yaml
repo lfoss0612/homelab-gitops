@@ -22,6 +22,17 @@ spec:
             serviceMonitor:
               enabled: true
         configs:
+          secret:
+            # Do not render/manage this Secret at all. It holds Argo CD's
+            # own runtime-generated auth material (password hashes,
+            # server.secretkey, TLS cert/key). ignoreDifferences was NOT
+            # sufficient to protect it on a first sync - the chart omits
+            # `data:` entirely when unset, and applying that wiped the
+            # live secret (lost accounts.lfoss.password, tls.crt/key,
+            # rotated server.secretkey) on 2026-07-05. createSecret:false
+            # removes it from the rendered manifest entirely, so Argo
+            # never has an opinion about it again.
+            createSecret: false
           cm:
             url: https://argocd.fosshomelab.duckdns.org
             accounts.lfoss: login,apiKey
@@ -59,14 +70,3 @@ spec:
             type: LoadBalancer
     repoURL: https://argoproj.github.io/argo-helm
     targetRevision: 9.5.19
-  ignoreDifferences:
-    # argocd-secret holds Argo CD's own runtime-generated auth material
-    # (admin/user password hashes, server.secretkey, TLS cert/key). The
-    # chart renders this Secret empty and Argo CD populates it itself at
-    # startup - syncing without this would wipe logins and rotate the
-    # signing key.
-    - group: ""
-      kind: Secret
-      name: argocd-secret
-      jsonPointers:
-        - /data
