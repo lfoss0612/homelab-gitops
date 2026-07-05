@@ -21,4 +21,4 @@ spec:
         - name: hostname
           value: rancher.home.lan
     repoURL: https://releases.rancher.com/server-charts/latest
-    targetRevision: 2.13.0
+    targetRevision: 2.14.3
