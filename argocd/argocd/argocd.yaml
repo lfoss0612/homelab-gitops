@@ -22,8 +22,15 @@ spec:
             serviceMonitor:
               enabled: true
         configs:
+          cm:
+            url: https://argocd.fosshomelab.duckdns.org
+            accounts.lfoss: login,apiKey
           params:
             server.insecure: true
+          rbac:
+            policy.csv: |
+              g, lfoss, role:admin
+            policy.default: role:readonly
         controller:
           metrics:
             enabled: true
@@ -52,3 +59,14 @@ spec:
             type: LoadBalancer
     repoURL: https://argoproj.github.io/argo-helm
     targetRevision: 9.5.19
+  ignoreDifferences:
+    # argocd-secret holds Argo CD's own runtime-generated auth material
+    # (admin/user password hashes, server.secretkey, TLS cert/key). The
+    # chart renders this Secret empty and Argo CD populates it itself at
+    # startup - syncing without this would wipe logins and rotate the
+    # signing key.
+    - group: ""
+      kind: Secret
+      name: argocd-secret
+      jsonPointers:
+        - /data
