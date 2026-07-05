@@ -12,6 +12,3 @@ spec:
     path: comfyui-gui/chart
     repoURL: https://github.com/lfoss0612/comfyui-helm-chart.git
     targetRevision: main
-  syncPolicy:
-    automated:
-      enabled: true
