@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: litellm
   namespace: argocd
-  labels:
-    app.kubernetes.io/part-of: platform
 spec:
   destination:
     namespace: litellm
