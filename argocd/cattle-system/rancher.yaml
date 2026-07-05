@@ -25,5 +25,14 @@ spec:
           value: rancher-cert
         - name: hostname
           value: rancher.home.lan
+        # Stop Rancher's own systemcharts controller from managing
+        # system-upgrade-controller (chart + Plans) on the local cluster,
+        # so Argo CD (argocd/cattle-system/system-upgrade-controller.yaml)
+        # is the sole owner. Internal/undocumented flag - takes effect once
+        # this Application is synced.
+        - name: extraEnv[0].name
+          value: CATTLE_FEATURES
+        - name: extraEnv[0].value
+          value: managed-system-upgrade-controller=false
     repoURL: https://releases.rancher.com/server-charts/latest
     targetRevision: 2.14.3
