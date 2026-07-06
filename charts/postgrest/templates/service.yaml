@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "postgrest.name" . }}
+  labels:
+    {{- include "postgrest.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    {{- if .Values.service.adminPort }}
+    - port: {{ .Values.service.adminPort }}
+      targetPort: http-admin
+      protocol: TCP
+      name: http-admin
+    {{- end }}
+  selector:
+    {{- include "postgrest.selectorLabels" . | nindent 4 }}

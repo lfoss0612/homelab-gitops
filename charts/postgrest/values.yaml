@@ -1,0 +1,49 @@
+# Default values for the postgrest chart.
+
+replicaCount: 1
+
+image:
+  repository: postgrest/postgrest
+  tag: v11.1.0
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+serverPort: 9000
+adminPort: 9001
+
+# Name of a pre-existing Secret (created out-of-band, not in git) providing
+# PGRST_DB_URI and PGRST_JWT_SECRET via envFrom. e.g.:
+#   kubectl -n postgrest create secret generic postgrest-db-secret \
+#     --from-literal=PGRST_DB_URI='postgresql://authenticator:<password>@yb-tserver-service.yugabytedb.svc.cluster.local:5433/chinook' \
+#     --from-literal=PGRST_JWT_SECRET='<jwt-secret>'
+existingSecret: ""
+
+postgrest:
+  dbSchema: ""
+  dbAnonRole: ""
+  dbPool: ""
+  dbPoolTimeout: ""
+  dbExtraSearchPath: ""
+  dbChannel: ""
+  dbChannelEnabled: ""
+  jwtAud: ""
+  roleClaimKey: ""
+  maxRows: ""
+  preRequest: ""
+  rootSpec: ""
+  rawMediaTypes: ""
+
+# Extra plain (non-secret) environment variables, standard k8s EnvVar format.
+env: []
+
+service:
+  type: ClusterIP
+  port: 80
+  adminPort: 9001
+
+resources: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

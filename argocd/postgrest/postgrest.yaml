@@ -1,0 +1,36 @@
+# Before this Application can sync successfully, create the DB/JWT secret
+# out-of-band (not in git), e.g.:
+#   kubectl -n postgrest create secret generic postgrest-db-secret \
+#     --from-literal=PGRST_DB_URI='postgresql://authenticator:<password>@yb-tserver-service.yugabytedb.svc.cluster.local:5433/chinook' \
+#     --from-literal=PGRST_JWT_SECRET='<jwt-secret>'
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgrest
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lfoss0612/homelab-gitops.git
+    targetRevision: HEAD
+    path: charts/postgrest
+    helm:
+      releaseName: postgrest
+      parameters:
+        - name: existingSecret
+          value: postgrest-db-secret
+        - name: postgrest.dbAnonRole
+          value: web_anon
+        - name: service.type
+          value: LoadBalancer
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: postgrest
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

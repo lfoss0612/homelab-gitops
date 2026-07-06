@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "postgrest.name" . }}
+  labels:
+    {{- include "postgrest.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "postgrest.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "postgrest.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "postgrest.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if not .Values.existingSecret }}
+          {{- fail "postgrest.existingSecret is required - create the Secret out-of-band with PGRST_DB_URI and PGRST_JWT_SECRET keys" }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.existingSecret }}
+          env:
+            - name: PGRST_SERVER_PORT
+              value: {{ .Values.serverPort | quote }}
+            - name: PGRST_ADMIN_SERVER_PORT
+              value: {{ .Values.adminPort | quote }}
+            {{- if .Values.postgrest.dbSchema }}
+            - name: PGRST_DB_SCHEMA
+              value: {{ .Values.postgrest.dbSchema | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.dbAnonRole }}
+            - name: PGRST_DB_ANON_ROLE
+              value: {{ .Values.postgrest.dbAnonRole | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.dbPool }}
+            - name: PGRST_DB_POOL
+              value: {{ .Values.postgrest.dbPool | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.dbPoolTimeout }}
+            - name: PGRST_DB_POOL_TIMEOUT
+              value: {{ .Values.postgrest.dbPoolTimeout | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.dbExtraSearchPath }}
+            - name: PGRST_DB_EXTRA_SEARCH_PATH
+              value: {{ .Values.postgrest.dbExtraSearchPath | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.dbChannel }}
+            - name: PGRST_DB_CHANNEL
+              value: {{ .Values.postgrest.dbChannel | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.dbChannelEnabled }}
+            - name: PGRST_DB_CHANNEL_ENABLED
+              value: {{ .Values.postgrest.dbChannelEnabled | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.jwtAud }}
+            - name: PGRST_JWT_AUD
+              value: {{ .Values.postgrest.jwtAud | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.roleClaimKey }}
+            - name: PGRST_ROLE_CLAIM_KEY
+              value: {{ .Values.postgrest.roleClaimKey | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.maxRows }}
+            - name: PGRST_DB_MAX_ROWS
+              value: {{ .Values.postgrest.maxRows | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.preRequest }}
+            - name: PGRST_PRE_REQUEST
+              value: {{ .Values.postgrest.preRequest | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.rootSpec }}
+            - name: PGRST_ROOT_SPEC
+              value: {{ .Values.postgrest.rootSpec | quote }}
+            {{- end }}
+            {{- if .Values.postgrest.rawMediaTypes }}
+            - name: PGRST_RAW_MEDIA_TYPES
+              value: {{ .Values.postgrest.rawMediaTypes | quote }}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.serverPort }}
+              protocol: TCP
+            - name: http-admin
+              containerPort: {{ .Values.adminPort }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-admin
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

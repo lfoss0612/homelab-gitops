@@ -1,0 +1,6 @@
+apiVersion: v2
+name: postgrest
+description: PostgREST deployment reading its DB URI / JWT secret from a pre-existing (out-of-band) Kubernetes Secret, so no credentials need to live in git.
+type: application
+version: 0.1.0
+appVersion: "11.1.0"
