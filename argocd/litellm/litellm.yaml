@@ -33,6 +33,8 @@ spec:
         - name: proxy_config.model_list
         - name: proxy_config.general_settings.store_model_in_db
           value: "True"
+        - name: proxy_config.litellm_settings.drop_params
+          value: "True"  
         - name: masterkeySecretName
           value: litellm-masterkey
         - name: masterkeySecretKey
