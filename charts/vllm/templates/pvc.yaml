@@ -1,0 +1,17 @@
+{{- if .Values.cache.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "vllm.name" . }}-hf-cache
+  labels:
+    {{- include "vllm.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.cache.size }}
+  {{- with .Values.cache.storageClassName }}
+  storageClassName: {{ . }}
+  {{- end }}
+{{- end }}

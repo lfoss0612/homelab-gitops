@@ -29,6 +29,11 @@ metadata:
   name: ai
   namespace: argocd
 spec:
+  # vllm syncs with CreateNamespace=true, which requires the project to permit
+  # cluster-scoped Namespace resources.
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
   destinations:
     - name: in-cluster
       namespace: '*'
@@ -44,6 +49,8 @@ spec:
     # (comfyui-gui and open-webui showed sync status Unknown because of this)
     - https://github.com/lfoss0612/comfyui-helm-chart.git
     - https://helm.openwebui.com/
+    # added: vllm deploys from this repo's local charts/vllm wrapper chart
+    - https://github.com/lfoss0612/homelab-gitops.git
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject

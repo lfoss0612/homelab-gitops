@@ -1,0 +1,59 @@
+# Default values for the vllm chart.
+
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  tag: v0.25.1
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+serverPort: 8000
+
+model:
+  # HuggingFace model id to download and serve.
+  name: Qwen/Qwen3-8B
+  # Model id exposed on the OpenAI API (/v1/models); defaults to model.name.
+  servedName: qwen3-8b
+  # Fraction of GPU memory vLLM may claim. Kept well below 1.0 because the
+  # RTX 5090 is time-sliced and shared with comfyui (no memory isolation).
+  gpuMemoryUtilization: "0.60"
+  maxModelLen: "16384"
+
+# Extra CLI args appended to the vllm serve command.
+extraArgs:
+  - --reasoning-parser=qwen3
+
+# Name of a pre-existing Secret (created out-of-band, not in git) with a
+# HUGGING_FACE_HUB_TOKEN key. Only needed for gated models; Qwen is ungated.
+existingSecret: ""
+
+# Extra plain (non-secret) environment variables, standard k8s EnvVar format.
+env: []
+
+# PVC for the HuggingFace download cache (~16 GiB for Qwen3-8B).
+cache:
+  enabled: true
+  size: 50Gi
+  storageClassName: ""  # empty -> cluster default (longhorn)
+
+# vLLM uses /dev/shm for tensor exchange; emptyDir sized here.
+shmSize: 8Gi
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  limits:
+    nvidia.com/gpu: 1
+
+# Model load can take minutes on first start (download + weight load).
+startupProbe:
+  periodSeconds: 10
+  failureThreshold: 180
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

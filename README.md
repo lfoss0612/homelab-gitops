@@ -72,6 +72,14 @@ Notes:
   namespace (`litellm-masterkey`, `litellm-postgresql-ext`, `litellm-dbcredentials`)
   referenced via `masterkeySecretName` and `postgresql.auth.existingSecret`,
   created out of band like the `mcp-*` servers.
+- `vllm` (`argocd/vllm/`, wrapper `platform-vllm`) deploys the local
+  `charts/vllm` wrapper chart: `vllm/vllm-openai` serving Qwen3-8B on the
+  RTX 5090 (one time-slicing replica, `gpu-memory-utilization 0.60` since the
+  GPU is shared with comfyui), with a Longhorn PVC caching the model download.
+  `litellm` exposes it as model `qwen3-8b` via
+  `http://vllm.vllm.svc.cluster.local:8000/v1`. No secret needed (Qwen is
+  ungated); for gated models create a Secret with `HUGGING_FACE_HUB_TOKEN` and
+  set `existingSecret`.
 - `postgrest` still lives in `argocd/pending/` and is **not** synced from git:
   the colearendt/postgrest chart renders its Secret from literal Helm values
   (`postgrest.dbUri`, `postgrest.jwtSecret`) with no `existingSecret` support, so

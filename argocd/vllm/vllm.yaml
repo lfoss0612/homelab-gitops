@@ -1,0 +1,25 @@
+# Serves Qwen3-8B on the RTX 5090 (one time-slicing replica) via the local
+# charts/vllm wrapper chart. Model/tuning defaults live in the chart's
+# values.yaml; litellm reaches it at http://vllm.vllm.svc.cluster.local:8000/v1.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vllm
+  namespace: argocd
+spec:
+  destination:
+    namespace: vllm
+    server: https://kubernetes.default.svc
+  project: ai
+  source:
+    repoURL: https://github.com/lfoss0612/homelab-gitops.git
+    targetRevision: HEAD
+    path: charts/vllm
+    helm:
+      releaseName: vllm
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

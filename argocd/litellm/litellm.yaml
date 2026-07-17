@@ -30,7 +30,15 @@ spec:
           value: /
         - name: ingress.hosts[0].paths[0].pathType
           value: ImplementationSpecific
-        - name: proxy_config.model_list
+        # Local vLLM server (argocd/vllm/, chart charts/vllm) serving Qwen3-8B.
+        # "hosted_vllm/" routes through LiteLLM's vLLM provider; the suffix must
+        # match vllm's --served-model-name.
+        - name: proxy_config.model_list[0].model_name
+          value: qwen3-8b
+        - name: proxy_config.model_list[0].litellm_params.model
+          value: hosted_vllm/qwen3-8b
+        - name: proxy_config.model_list[0].litellm_params.api_base
+          value: http://vllm.vllm.svc.cluster.local:8000/v1
         - name: proxy_config.general_settings.store_model_in_db
           value: "True"
         - name: proxy_config.litellm_settings.drop_params
