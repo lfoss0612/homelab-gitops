@@ -18,6 +18,8 @@ spec:
           value: LoadBalancer
         - name: grafana.service.loadBalancerIP
           value: 10.2.6.10
+        - name: grafana.service.targetPort
+          value: "3000"
         - name: grafana.persistence.enabled
           value: "true"
         - name: grafana.persistence.type
