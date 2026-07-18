@@ -36,3 +36,15 @@ spec:
           value: managed-system-upgrade-controller=false
     repoURL: https://releases.rancher.com/server-charts/latest
     targetRevision: 2.14.3
+  # The chart injects CATTLE_BOOTSTRAP_PASSWORD into this Deployment via a
+  # pre-install/pre-upgrade hook Secret (bootstrap-secret) read back with
+  # Helm's `lookup`, which plain template rendering can never reproduce.
+  # This env var will permanently diff from git; ignore it rather than
+  # chase unfixable drift.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: rancher
+      namespace: cattle-system
+      jsonPointers:
+        - /spec/template/spec/containers/0/env
