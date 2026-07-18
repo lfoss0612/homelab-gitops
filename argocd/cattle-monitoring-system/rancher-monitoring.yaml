@@ -30,6 +30,8 @@ spec:
           value: longhorn
         - name: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage
           value: 50Gi
+        - name: global.cattle.clusterId
+          value: local  
     repoURL: https://charts.rancher.io
     targetRevision: 109.0.2+up80.9.1-rancher.8
   syncPolicy:
