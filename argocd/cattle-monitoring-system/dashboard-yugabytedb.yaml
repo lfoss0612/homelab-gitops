@@ -1,12 +1,18 @@
-# Sourced from grafana.com dashboard 12528, hand-patched (see comment
-# above dcgm-exporter-servicemonitor.yaml for the sibling GPU fix). The
-# stock dashboard's "YB DB Cluster" picker listed every Prometheus job in
-# the cluster with no default, so every panel read empty. Here the picker
-# is narrowed to yb-masters/yb-tservers and defaults to yb-tservers; toggle
-# it to yb-masters to see the Master-row panels. Loaded via Grafana's
-# dashboard sidecar (grafana_dashboard label), not gnetId provisioning, so
-# these edits aren't clobbered on each pod restart the way a gnetId
-# download would be.
+# Sourced from grafana.com dashboard 12528, hand-patched:
+# 1. Narrowed the "YB DB Cluster" job picker (label_values(job), no
+#    filter/default) to yb-masters/yb-tservers, defaulted to yb-tservers.
+# 2. Stripped every panel's hardcoded group="yb-master"/"yb-tserver"/
+#    "ycql"/"yedis" label matcher. That label doesn't exist on our
+#    exporter's metrics at all (this dashboard targets YugabyteDB's
+#    single-job Docker demo, which synthesizes a "group" label to tell
+#    master/tserver/ycql/yedis apart within one job; our Helm chart
+#    already splits them into separate yb-masters/yb-tservers jobs via
+#    their own ServiceMonitors, so job="$dbcluster" alone is sufficient).
+#    Every panel using that filter was guaranteed empty regardless of
+#    which job was selected.
+# See dcgm-exporter-servicemonitor.yaml in this directory for the sibling
+# GPU dashboard fix (same root-cause class: a scrape gap, not this one's
+# query gap).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -246,14 +252,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(threads_running{job=\"$dbcluster\",group=\"yb-master\"})",
+                  "expr": "avg(threads_running{job=\"$dbcluster\"})",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Running",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(threads_started{job=\"$dbcluster\",group=\"yb-master\"})",
+                  "expr": "avg(threads_started{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "Started",
                   "refId": "F"
@@ -351,39 +357,39 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg - Sync",
                   "refId": "D"
                 },
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg - Commit",
                   "refId": "E"
                 },
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg  - Append",
                   "refId": "F"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Sync",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Commit",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Append",
@@ -482,20 +488,20 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(log_sync_latency_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(log_sync_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "avg(irate(log_sync_latency_sum{job=\"$dbcluster\"}[5m])) / avg(irate(log_sync_latency_count{job=\"$dbcluster\"}[5m]))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Sync",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(log_group_commit_latency_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(log_group_commit_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "avg(irate(log_group_commit_latency_sum{job=\"$dbcluster\"}[5m])) / avg(irate(log_group_commit_latency_count{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Commit",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg(irate(log_append_latency_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(log_append_latency_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "avg(irate(log_append_latency_sum{job=\"$dbcluster\"}[5m])) / avg(irate(log_append_latency_count{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Append",
                   "refId": "C"
@@ -594,28 +600,28 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-master\"})) / 1024",
+                  "expr": "avg(sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Total Avg - Log Bytes Read",
                   "refId": "D"
                 },
                 {
-                  "expr": "avg(sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\",group=\"yb-master\"})) / 1024",
+                  "expr": "avg(sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Total Avg - Log Cache Size",
                   "refId": "E"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-master\"})) / 1024",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Bytes Read",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\",group=\"yb-master\"})) / 1024",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Cache Size",
@@ -714,14 +720,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Total Avg - Log Bytes Logged",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Bytes Logged",
@@ -820,20 +826,20 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(rate(glog_info_messages{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "sum(rate(glog_info_messages{job=\"$dbcluster\"}[5m]))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Info",
                   "refId": "A"
                 },
                 {
-                  "expr": "sum(rate(glog_warning_messages{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "sum(rate(glog_warning_messages{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Warning",
                   "refId": "B"
                 },
                 {
-                  "expr": "sum(rate(glog_error_messages{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "sum(rate(glog_error_messages{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Error",
                   "refId": "C"
@@ -931,13 +937,13 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg - Log Bytes Read",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-master\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Bytes Read",
@@ -1135,14 +1141,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\",group=\"yb-master\"}))",
+                  "expr": "avg(sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\"}))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Total Avg - Num Ops",
                   "refId": "D"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\",group=\"yb-master\"})) / 1024",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Num Ops",
@@ -1241,14 +1247,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\"}[5m]))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Write",
                   "refId": "A"
                 },
                 {
-                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))",
+                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Read",
                   "refId": "B"
@@ -1345,14 +1351,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))\r",
+                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Write",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))\r",
+                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Read",
@@ -1450,14 +1456,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Read",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Write",
@@ -1555,21 +1561,21 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))\r",
+                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Incoming Queue",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Outbound transfer time",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\",group=\"yb-master\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\",group=\"yb-master\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "interval": "",
                   "legendFormat": "Outbound queue time",
                   "refId": "C"
@@ -1681,14 +1687,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Read",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Write",
@@ -1786,21 +1792,21 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))\r",
+                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Incoming Queue",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Outbound transfer time",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "interval": "",
                   "legendFormat": "Outbound queue time",
                   "refId": "C"
@@ -1897,14 +1903,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\"}[5m]))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Write",
                   "refId": "A"
                 },
                 {
-                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "sum(irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Read",
                   "refId": "B"
@@ -2001,14 +2007,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))\r",
+                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_sum{job=\"$dbcluster\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Write_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Write",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))\r",
+                  "expr": "avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_sum{job=\"$dbcluster\"}[5m])) / avg by (exported_instance) (irate(handler_latency_yb_tserver_TabletServerService_Read_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Read",
@@ -2629,14 +2635,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(threads_running{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "avg(threads_running{job=\"$dbcluster\"})",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Running",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(threads_started{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "avg(threads_started{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "Started",
                   "refId": "F"
@@ -2937,20 +2943,20 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(log_sync_latency_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(log_sync_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "avg(irate(log_sync_latency_sum{job=\"$dbcluster\"}[5m])) / avg(irate(log_sync_latency_count{job=\"$dbcluster\"}[5m]))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Sync",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(log_group_commit_latency_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(log_group_commit_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "avg(irate(log_group_commit_latency_sum{job=\"$dbcluster\"}[5m])) / avg(irate(log_group_commit_latency_count{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Commit",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg(irate(log_append_latency_sum{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])) / avg(irate(log_append_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "avg(irate(log_append_latency_sum{job=\"$dbcluster\"}[5m])) / avg(irate(log_append_latency_count{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Append",
                   "refId": "C"
@@ -3048,13 +3054,13 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg - Log Bytes Logged",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_bytes_logged{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Bytes Logged",
@@ -3153,13 +3159,13 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg - Log Bytes Read",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_reader_bytes_read{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Bytes Read",
@@ -3259,39 +3265,39 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg - Sync",
                   "refId": "D"
                 },
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg - Commit",
                   "refId": "E"
                 },
                 {
-                  "expr": "avg(sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg(sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\"}[5m])))",
                   "interval": "",
                   "legendFormat": "Total Avg  - Append",
                   "refId": "F"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_sync_latency_count{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Sync",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_group_commit_latency_count{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Commit",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\",group=\"yb-tserver\"}[5m])))",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (rate(log_append_latency_count{job=\"$dbcluster\"}[5m])))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Append",
@@ -3496,28 +3502,28 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-tserver\"})) / 1024",
+                  "expr": "avg(sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Total Avg - Log Bytes Read",
                   "refId": "D"
                 },
                 {
-                  "expr": "avg(sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\",group=\"yb-tserver\"})) / 1024",
+                  "expr": "avg(sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Total Avg - Log Cache Size",
                   "refId": "E"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\",group=\"yb-tserver\"})) / 1024",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_reader_bytes_read{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Bytes Read",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\",group=\"yb-tserver\"})) / 1024",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_size{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Log Cache Size",
@@ -3617,14 +3623,14 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\",group=\"yb-tserver\"}))",
+                  "expr": "avg(sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\"}))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Total Avg - Num Ops",
                   "refId": "D"
                 },
                 {
-                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\",group=\"yb-tserver\"})) / 1024",
+                  "expr": "avg by (exported_instance) (sum without (table_id, table_name) (log_cache_num_ops{job=\"$dbcluster\"})) / 1024",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "{{exported_instance}} - Num Ops",
@@ -3723,20 +3729,20 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(rate(glog_info_messages{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "sum(rate(glog_info_messages{job=\"$dbcluster\"}[5m]))",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Info",
                   "refId": "A"
                 },
                 {
-                  "expr": "sum(rate(glog_warning_messages{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "sum(rate(glog_warning_messages{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Warning",
                   "refId": "B"
                 },
                 {
-                  "expr": "sum(rate(glog_error_messages{job=\"$dbcluster\",group=\"yb-tserver\"}[5m]))",
+                  "expr": "sum(rate(glog_error_messages{job=\"$dbcluster\"}[5m]))",
                   "interval": "",
                   "legendFormat": "Error",
                   "refId": "C"
@@ -3834,43 +3840,43 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "max(rpcs_in_queue_yb_consensus_ConsensusService{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "max(rpcs_in_queue_yb_consensus_ConsensusService{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "Consensus",
                   "refId": "A"
                 },
                 {
-                  "expr": "max(rpcs_in_queue_yb_server_GenericService{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "max(rpcs_in_queue_yb_server_GenericService{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "Generic",
                   "refId": "B"
                 },
                 {
-                  "expr": "max(rpcs_in_queue_yb_tserver_RemoteBootstrapService{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "max(rpcs_in_queue_yb_tserver_RemoteBootstrapService{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "RemoteBootstrap",
                   "refId": "C"
                 },
                 {
-                  "expr": "max(rpcs_in_queue_yb_tserver_TabletServerService{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "max(rpcs_in_queue_yb_tserver_TabletServerService{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "TS RPC",
                   "refId": "D"
                 },
                 {
-                  "expr": "max(rpcs_in_queue_yb_tserver_TabletServerBackupService{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "max(rpcs_in_queue_yb_tserver_TabletServerBackupService{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "Backups",
                   "refId": "E"
                 },
                 {
-                  "expr": "max(rpcs_in_queue_yb_tserver_TabletServerAdminService{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "max(rpcs_in_queue_yb_tserver_TabletServerAdminService{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "Admin",
                   "refId": "F"
                 },
                 {
-                  "expr": "max(rpcs_in_queue_yb_cdc_CDCService{job=\"$dbcluster\",group=\"yb-tserver\"})",
+                  "expr": "max(rpcs_in_queue_yb_cdc_CDCService{job=\"$dbcluster\"})",
                   "interval": "",
                   "legendFormat": "CDC",
                   "refId": "G"
@@ -7201,21 +7207,21 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\",group=\"yedis\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\",group=\"yedis\"}[5m]))\r",
+                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Incoming Queue",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\",group=\"yedis\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\",group=\"yedis\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Outbound transfer time",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\",group=\"yedis\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\",group=\"yedis\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "interval": "",
                   "legendFormat": "Outbound queue time",
                   "refId": "C"
@@ -9048,21 +9054,21 @@ data:
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\",group=\"ycql\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\",group=\"ycql\"}[5m]))\r",
+                  "expr": "avg(irate(rpc_incoming_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(rpc_incoming_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Incoming Queue",
                   "refId": "A"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\",group=\"ycql\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\",group=\"ycql\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_transfer_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_transfer_count{job=\"$dbcluster\"}[5m]))\r",
                   "hide": false,
                   "interval": "",
                   "legendFormat": "Outbound transfer time",
                   "refId": "B"
                 },
                 {
-                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\",group=\"ycql\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\",group=\"ycql\"}[5m]))\r",
+                  "expr": "avg(irate(handler_latency_outbound_call_queue_time_sum{job=\"$dbcluster\"}[5m])) / avg(irate(handler_latency_outbound_call_queue_time_count{job=\"$dbcluster\"}[5m]))\r",
                   "interval": "",
                   "legendFormat": "Outbound queue time",
                   "refId": "C"
