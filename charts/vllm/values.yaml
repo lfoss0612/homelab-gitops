@@ -1,5 +1,9 @@
 # Default values for the vllm chart.
 
+# Rancher project (cluster "local") this namespace should be grouped under
+# in the Rancher UI. Same "ai" project as litellm/langflow/comfyui.
+rancherProjectId: p-jgsqc
+
 replicaCount: 1
 
 image:

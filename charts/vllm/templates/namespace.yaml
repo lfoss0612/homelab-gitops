@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+    kubernetes.io/metadata.name: {{ .Release.Namespace }}
+    field.cattle.io/projectId: {{ .Values.rancherProjectId }}
+  annotations:
+    field.cattle.io/projectId: local:{{ .Values.rancherProjectId }}
