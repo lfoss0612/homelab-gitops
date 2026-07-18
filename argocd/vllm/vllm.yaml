@@ -17,6 +17,13 @@ spec:
     path: charts/vllm
     helm:
       releaseName: vllm
+      parameters:
+        # TEMPORARY: scaled to 0 because k8s-worker-2's 96G root disk cannot
+        # hold the ~8 GiB compressed / ~25 GiB unpacked vllm-openai image
+        # (node hits DiskPressure mid-pull). Remove this parameter after
+        # growing the VM's scsi0 disk on pve-ai and expanding the LV.
+        - name: replicaCount
+          value: "0"
   syncPolicy:
     automated:
       prune: true
