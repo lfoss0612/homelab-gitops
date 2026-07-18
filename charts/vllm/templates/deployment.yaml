@@ -18,6 +18,11 @@ spec:
       labels:
         {{- include "vllm.labels" . | nindent 8 }}
     spec:
+      # Kubernetes injects <SVCNAME>_PORT env vars for every reachable Service;
+      # since the Service here is named "vllm", that clobbers vLLM's own
+      # VLLM_PORT variable with a "tcp://<ip>:8000" URI and crashes the engine.
+      # See https://docs.vllm.ai/en/latest/configuration/env_vars.html
+      enableServiceLinks: false
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
