@@ -90,14 +90,11 @@ spec:
                 gnetId: 12239
                 revision: 2
                 datasource: Prometheus
-              # Marked "deprecated" upstream in favor of a node_prefix-based
-              # dashboard, but that one needs YugabyteDB Anywhere-style
-              # metrics we don't have. This one matches our job-label scrape
-              # (yb-masters/yb-tservers) and its metrics return real data.
-              yugabytedb:
-                gnetId: 12528
-                revision: 1
-                datasource: Prometheus
+                # No data until dcgm-exporter is actually scraped -- see
+                # dcgm-exporter-servicemonitor.yaml in this directory.
+              # YugabyteDB dashboard lives in dashboard-yugabytedb.yaml
+              # instead (hand-patched copy of gnetId 12528; the stock
+              # version's job picker had no filter/default and read empty).
     repoURL: https://charts.rancher.io
     targetRevision: 109.0.2+up80.9.1-rancher.8
   syncPolicy:

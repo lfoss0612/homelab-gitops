@@ -1,0 +1,20 @@
+# nvidia-dcgm-exporter runs (deployed by gpu-operator) but nothing scraped
+# it: the gpu-operator ServiceMonitor only targets the operator's own
+# controller-runtime metrics (label app=gpu-operator), not this exporter
+# Service (label app=nvidia-dcgm-exporter). Zero DCGM_* series existed in
+# Prometheus as a result, which is why the DCGM dashboard showed no data.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nvidia-dcgm-exporter
+  namespace: gpu-operator
+  labels:
+    app: nvidia-dcgm-exporter
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-dcgm-exporter
+  endpoints:
+    - port: gpu-metrics
+      path: /metrics
+      interval: 30s
