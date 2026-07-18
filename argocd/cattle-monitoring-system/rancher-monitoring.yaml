@@ -46,8 +46,10 @@ spec:
         grafana:
           # Rancher's mirrored curl image (rancher/appco-curl) lacks sed,
           # which download_dashboards.sh needs for datasource rewriting.
+          # Note: this chart fork joins registry+repository with no "/",
+          # so leave registry empty and let Docker Hub be implicit.
           downloadDashboardsImage:
-            registry: docker.io
+            registry: ""
             repository: curlimages/curl
             tag: 8.14.1
           dashboardProviders:
