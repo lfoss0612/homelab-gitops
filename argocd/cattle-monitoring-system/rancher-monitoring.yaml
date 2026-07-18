@@ -18,6 +18,12 @@ spec:
           value: LoadBalancer
         - name: grafana.service.loadBalancerIP
           value: 10.2.6.10
+        - name: grafana.persistence.enabled
+          value: "true"
+        - name: grafana.persistence.type
+          value: pvc
+        - name: grafana.persistence.existingClaim
+          value: grafana-dashboards
         - name: prometheus.prometheusSpec.retention
           value: 10d
         - name: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName
