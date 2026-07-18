@@ -44,6 +44,12 @@ spec:
           value: local
       valuesObject:
         grafana:
+          # Rancher's mirrored curl image (rancher/appco-curl) lacks sed,
+          # which download_dashboards.sh needs for datasource rewriting.
+          downloadDashboardsImage:
+            registry: docker.io
+            repository: curlimages/curl
+            tag: 8.14.1
           dashboardProviders:
             dashboardproviders.yaml:
               apiVersion: 1
