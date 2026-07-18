@@ -20,10 +20,18 @@ model:
   name: Qwen/Qwen3-8B
   # Model id exposed on the OpenAI API (/v1/models); defaults to model.name.
   servedName: qwen3-8b
-  # Fraction of GPU memory vLLM may claim. Kept well below 1.0 because the
-  # RTX 5090 is time-sliced and shared with comfyui (no memory isolation).
+  # Fraction of GPU memory vLLM may claim. This is a hard budget against
+  # *total* device memory, not "free" memory - vLLM does not defer to what
+  # ollama/comfyui are concurrently using, so raising this risks a real CUDA
+  # OOM when another workload's model is also loaded. Kept well below 1.0
+  # because the RTX 5090 is time-sliced and shared (no memory isolation).
   gpuMemoryUtilization: "0.60"
-  maxModelLen: "16384"
+  # 16384 didn't leave enough KV cache headroom at 0.60 utilization
+  # (needed 2.25 GiB, had 2.19 GiB available) when ollama's model was also
+  # resident. Lowered instead of raising gpuMemoryUtilization, since KV cache
+  # size scales with context length but vLLM's memory budget does not scale
+  # with what else is running on the shared GPU.
+  maxModelLen: "8192"
 
 # Extra CLI args appended to the vllm serve command.
 extraArgs:
