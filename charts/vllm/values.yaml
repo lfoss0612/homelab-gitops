@@ -16,8 +16,10 @@ imagePullSecrets: []
 serverPort: 8000
 
 model:
-  # HuggingFace model id to download and serve.
-  name: Qwen/Qwen3-8B
+  # HuggingFace model id to download and serve. FP8 halves the weights
+  # (~16 GiB bf16 -> ~8.5 GiB) with native Blackwell hardware support, which
+  # is what lets both the 0.45 budget and the 16k context below fit.
+  name: Qwen/Qwen3-8B-FP8
   # Model id exposed on the OpenAI API (/v1/models); defaults to model.name.
   servedName: qwen3-8b
   # Fraction of GPU memory vLLM may claim. This is a hard budget against
@@ -25,13 +27,10 @@ model:
   # ollama/comfyui are concurrently using, so raising this risks a real CUDA
   # OOM when another workload's model is also loaded. Kept well below 1.0
   # because the RTX 5090 is time-sliced and shared (no memory isolation).
-  gpuMemoryUtilization: "0.60"
-  # 16384 didn't leave enough KV cache headroom at 0.60 utilization
-  # (needed 2.25 GiB, had 2.19 GiB available) when ollama's model was also
-  # resident. Lowered instead of raising gpuMemoryUtilization, since KV cache
-  # size scales with context length but vLLM's memory budget does not scale
-  # with what else is running on the shared GPU.
-  maxModelLen: "8192"
+  # 0.45 x 32 GiB = ~14.5 GiB: ~8.5 GiB FP8 weights + overhead leaves ~4 GiB
+  # KV cache, while growing ollama's working room to ~17 GiB.
+  gpuMemoryUtilization: "0.45"
+  maxModelLen: "16384"
 
 # Extra CLI args appended to the vllm serve command.
 extraArgs:

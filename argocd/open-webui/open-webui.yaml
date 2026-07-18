@@ -22,16 +22,34 @@ spec:
           value: nvidia
         - name: persistence.size
           value: 10Gi
+        # GPU memory tuning: the RTX 5090 is shared with vllm (which holds a
+        # static ~14.5 GiB), so keep one model resident at a time, fully on
+        # GPU, with flash attention + q8_0 KV cache to stretch the headroom.
         - name: ollama.extraEnv[0].name
           value: OLLAMA_NUM_PARALLEL
         - forceString: true
           name: ollama.extraEnv[0].value
-          value: "2"
+          value: "1"
         - name: ollama.extraEnv[1].name
           value: OMP_NUM_THREADS
         - forceString: true
           name: ollama.extraEnv[1].value
           value: "8"
+        - name: ollama.extraEnv[2].name
+          value: OLLAMA_FLASH_ATTENTION
+        - forceString: true
+          name: ollama.extraEnv[2].value
+          value: "1"
+        - name: ollama.extraEnv[3].name
+          value: OLLAMA_KV_CACHE_TYPE
+        - forceString: true
+          name: ollama.extraEnv[3].value
+          value: q8_0
+        - name: ollama.extraEnv[4].name
+          value: OLLAMA_MAX_LOADED_MODELS
+        - forceString: true
+          name: ollama.extraEnv[4].value
+          value: "1"
         - name: runtimeClassName
           value: nvidia
         - name: replicaCount
