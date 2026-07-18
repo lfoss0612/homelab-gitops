@@ -44,6 +44,13 @@ spec:
           value: local
       valuesObject:
         grafana:
+          sidecar:
+            dashboards:
+              # Lets ConfigMap-provisioned dashboards (dashboard-yugabytedb.yaml)
+              # pick their folder via this annotation key. Without it the
+              # sidecar ignores per-object folder placement and drops
+              # everything in General.
+              folderAnnotation: grafana_folder
           # Rancher's mirrored curl image (rancher/appco-curl) lacks sed,
           # which download_dashboards.sh needs for datasource rewriting.
           # Note: this chart fork joins registry+repository with no "/",
