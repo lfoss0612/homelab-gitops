@@ -61,6 +61,8 @@ resources:
   limits:
     nvidia.com/gpu: 1
 
+runtimeClassName: nvidia
+
 # Model load can take minutes on first start (download + weight load).
 startupProbe:
   periodSeconds: 10

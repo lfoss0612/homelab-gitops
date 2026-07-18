@@ -18,6 +18,10 @@ spec:
       labels:
         {{- include "vllm.labels" . | nindent 8 }}
     spec:
+      # Matches the RuntimeClass other GPU workloads on this cluster use
+      # (e.g. open-webui-ollama) instead of relying on containerd's implicit
+      # default runtime.
+      runtimeClassName: {{ .Values.runtimeClassName }}
       # Kubernetes injects <SVCNAME>_PORT env vars for every reachable Service;
       # since the Service here is named "vllm", that clobbers vLLM's own
       # VLLM_PORT variable with a "tcp://<ip>:8000" URI and crashes the engine.
