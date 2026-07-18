@@ -41,7 +41,47 @@ spec:
         - name: grafana.service.targetPort
           value: "3000"
         - name: global.cattle.clusterId
-          value: local     
+          value: local
+      valuesObject:
+        grafana:
+          dashboardProviders:
+            dashboardproviders.yaml:
+              apiVersion: 1
+              providers:
+                - name: homelab
+                  orgId: 1
+                  folder: Homelab
+                  type: file
+                  disableDeletion: false
+                  editable: true
+                  options:
+                    path: /var/lib/grafana/dashboards/homelab
+          dashboards:
+            homelab:
+              argocd:
+                gnetId: 14584
+                revision: 1
+                datasource: Prometheus
+              cert-manager:
+                gnetId: 20842
+                revision: 3
+                datasource: Prometheus
+              longhorn:
+                gnetId: 16888
+                revision: 14
+                datasource: Prometheus
+              metallb:
+                gnetId: 14127
+                revision: 1
+                datasource: Prometheus
+              nginx-ingress:
+                gnetId: 9614
+                revision: 1
+                datasource: Prometheus
+              nvidia-dcgm:
+                gnetId: 12239
+                revision: 2
+                datasource: Prometheus
     repoURL: https://charts.rancher.io
     targetRevision: 109.0.2+up80.9.1-rancher.8
   syncPolicy:
