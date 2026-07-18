@@ -18,8 +18,6 @@ spec:
           value: LoadBalancer
         - name: grafana.service.loadBalancerIP
           value: 10.2.6.10
-        - name: grafana.service.targetPort
-          value: "3000"
         - name: grafana.persistence.enabled
           value: "true"
         - name: grafana.persistence.type
@@ -36,6 +34,10 @@ spec:
           value: "https://grafana.home.lan/"
         - name: grafana.grafana\.ini.server.serve_from_sub_path
           value: "false"
+        - name: grafana.ingress.enabled
+          value: "true"
+        - name: grafana.ingress.hosts[0]
+          value: grafana.home.lan  
     repoURL: https://charts.rancher.io
     targetRevision: 109.0.2+up80.9.1-rancher.8
   syncPolicy:
