@@ -1,6 +1,15 @@
 # Sourced from grafana.com dashboard 12528, hand-patched:
 # 1. Narrowed the "YB DB Cluster" job picker (label_values(job), no
 #    filter/default) to yb-masters/yb-tservers, defaulted to yb-tservers.
+#    IMPORTANT: the filter regex uses a NON-capturing group
+#    (?:masters|tservers) deliberately. An earlier version used a
+#    capturing group (masters|tservers), which made Grafana use the
+#    captured text ("tservers") as the variable's VALUE instead of the
+#    full match ("yb-tservers") -- silently feeding job="tservers" (which
+#    matches nothing) into every panel query on this dashboard the whole
+#    time, regardless of every other fix below. Confirmed via Grafana's
+#    server request logs, which showed var-dbcluster=tservers with no
+#    prefix. This was the actual root cause of "no data everywhere".
 # 2. Stripped every panel's hardcoded group="yb-master"/"yb-tserver"/
 #    "ycql"/"yedis" label matcher. That label doesn't exist on our
 #    exporter's metrics at all (this dashboard targets YugabyteDB's
@@ -16,14 +25,10 @@
 #    breaking that assumption. Now a static avg(up{job="$dbcluster"}).
 # 4. Converted all legacy Angular panel types (105 "graph", 1
 #    "singlestat", schemaVersion 25 from ~2018) to modern "timeseries"/
-#    "stat" panels. Grafana 12 has fully dropped Angular support;
-#    client-side migration of these types is normally automatic but
-#    wasn't reliably rendering data here, so they're now hand-converted.
+#    "stat" panels. Grafana 12 has fully dropped Angular support.
 # NOTE: 6 of 7 sections (Master, Tablet Server, YEDIS, YCQL, YSQL,
 # RocksDB) are COLLAPSED BY DEFAULT -- click a section header to expand
-# it. Only "Node Status" renders open. This is very likely why the
-# dashboard looked completely empty: only one (now-fixed) panel was
-# visible without clicking into any section.
+# it. Only "Node Status" renders open.
 # Remaining empty panels within YEDIS Ops & Latency are genuinely
 # empty, not broken: this cluster doesn't use the YEDIS API, so those
 # counters never get emitted.
@@ -7958,7 +7963,7 @@ data:
             "options": [],
             "query": "label_values(job)",
             "refresh": 2,
-            "regex": "/^yb-(masters|tservers)$/",
+            "regex": "/^yb-(?:masters|tservers)$/",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": "",
