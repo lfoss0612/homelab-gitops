@@ -51,6 +51,13 @@ spec:
               # sidecar ignores per-object folder placement and drops
               # everything in General.
               folderAnnotation: grafana_folder
+              provider:
+                # The sidecar writes the file into the right subfolder
+                # (e.g. /tmp/dashboards/Homelab) regardless of this setting,
+                # but Grafana's own file-provisioner still needs this to
+                # turn that directory structure into an actual folder,
+                # otherwise it re-flattens everything into General.
+                foldersFromFilesStructure: true
           # Rancher's mirrored curl image (rancher/appco-curl) lacks sed,
           # which download_dashboards.sh needs for datasource rewriting.
           # Note: this chart fork joins registry+repository with no "/",
