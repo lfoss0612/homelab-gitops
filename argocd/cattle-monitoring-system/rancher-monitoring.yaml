@@ -34,6 +34,12 @@ spec:
           value: "https://grafana.home.lan/"
         - name: grafana.grafana\.ini.server.serve_from_sub_path
           value: "false"
+        # Bypass the chart's nginx sidecar (targetPort 8080): it caches
+        # responses (incl. auth state) for up to 1d without varying by
+        # session cookie, which broke login/logout. Direct access only;
+        # this also skips the sidecar's Rancher-embedded-iframe URL rewrite.
+        - name: grafana.service.targetPort
+          value: "3000"
         - name: global.cattle.clusterId
           value: local     
     repoURL: https://charts.rancher.io
