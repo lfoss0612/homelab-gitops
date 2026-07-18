@@ -17,7 +17,7 @@ spec:
         - name: replicas.totalMasters
           value: "1"
         - name: replicas.tserver
-          value: "1"
+          value: "0"
         - name: master.gflags.master_enable_universe_uuid_heartbeat_check
           value: "false"
       values: |
