@@ -21,8 +21,10 @@ spec:
           value: nginx
         - name: replicas
           value: "1"
+        - name: ingress.tls.source
+          value: secret
         - name: ingress.tls.secretName
-          value: rancher-cert
+          value: home-lan-tls
         - name: hostname
           value: rancher.home.lan
         # Stop Rancher's own systemcharts controller from managing
