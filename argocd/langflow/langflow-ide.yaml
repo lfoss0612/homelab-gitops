@@ -16,6 +16,28 @@ spec:
           value: langflow-service
         - name: langflow.frontend.service.type
           value: LoadBalancer
+      valuesObject:
+        langflow:
+          backend:
+            env:
+              - name: LANGFLOW_PORT
+                value: "7860"
+              - name: LANGFLOW_ALEMBIC_LOG_FILE
+                value: /app/db/alembic.log
+              - name: LANGFLOW_UPDATE_STARTER_PROJECTS
+                value: "false"
+              # langflow now refuses to boot without explicit superuser
+              # credentials; secret is created out-of-band (kubectl), not in git
+              - name: LANGFLOW_SUPERUSER
+                valueFrom:
+                  secretKeyRef:
+                    name: langflow-superuser
+                    key: username
+              - name: LANGFLOW_SUPERUSER_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: langflow-superuser
+                    key: password
     repoURL: https://langflow-ai.github.io/langflow-helm-charts
     targetRevision: '*'
   syncPolicy:
