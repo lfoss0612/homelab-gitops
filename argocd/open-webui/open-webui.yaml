@@ -56,8 +56,13 @@ spec:
           value: "1"
         - name: service.type
           value: LoadBalancer
+        - name: extraEnvFrom[0].secretRef.name
+          value: open-webui-db
     repoURL: https://helm.openwebui.com/
-    targetRevision: '*'
+    # Pinned deliberately. Was '*' (auto-upgrade), which silently jumped to
+    # 15.2.0 on 2026-07-18 and reinitialized an empty SQLite webui.db, losing
+    # all users/settings. Bump this explicitly after reviewing release notes.
+    targetRevision: 15.2.0
   syncPolicy:
     automated:
       prune: true
