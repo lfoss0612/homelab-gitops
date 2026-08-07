@@ -50,6 +50,11 @@ spec:
         - forceString: true
           name: ollama.extraEnv[4].value
           value: "1"
+        - name: ollama.extraEnv[5].name
+          value: OLLAMA_KEEP_ALIVE
+        - forceString: true
+          name: ollama.extraEnv[5].value
+          value: "-1"  
         - name: runtimeClassName
           value: nvidia
         - name: replicaCount
