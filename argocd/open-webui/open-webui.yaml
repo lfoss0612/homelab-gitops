@@ -63,6 +63,15 @@ spec:
           value: LoadBalancer
         - name: extraEnvFrom[0].secretRef.name
           value: open-webui-db
+        # LiteLLM OpenAI-compatible API backend (http://litellm.litellm.svc.cluster.local:8080)
+        - name: extraEnv[0].name
+          value: OPENAI_API_BASE_URL
+        - name: extraEnv[0].value
+          value: http://litellm.litellm.svc.cluster.local:8080/v1
+        - name: extraEnv[1].name
+          value: OPENAI_API_KEY
+        - name: extraEnv[1].value
+          value: "not-needed"
     repoURL: https://helm.openwebui.com/
     # Pinned deliberately. Was '*' (auto-upgrade), which silently jumped to
     # 15.2.0 on 2026-07-18 and reinitialized an empty SQLite webui.db, losing
