@@ -1,9 +1,23 @@
 # Read-only ServiceAccount for Zabbix's official Kubernetes templates
 # ("Kubernetes nodes by HTTP" etc. in homelab-ansible's zabbix.home.lan
-# monitoring). Scoped to nodes/pods/namespaces get/list/watch only, no write
-# access anywhere. The actual bearer token is generated out-of-band
-# (kubectl create token) and stored vault-encrypted in homelab-ansible,
-# never committed here — see CLAUDE.md "Never commit credentials".
+# monitoring). Scoped to nodes/pods/namespaces/endpoints get/list/watch
+# only, no write access anywhere. The actual bearer token is generated
+# out-of-band (kubectl create token) and stored vault-encrypted in
+# homelab-ansible, never committed here — see CLAUDE.md "Never commit
+# credentials".
+#
+# "endpoints" added 2026-08-23: the "Kubernetes nodes by HTTP" template's
+# "Get nodes" item is a single script that calls /api/v1/nodes,
+# /api/v1/pods, AND /api/v1/endpoints in sequence inside one try/catch -
+# a 403 on any one of them (endpoints wasn't originally granted) aborts
+# the whole item, discarding the node/pod data that had already been
+# fetched successfully. The endpoints call looks up a named Endpoints
+# object (default {$KUBE.NODES.ENDPOINT.NAME} =
+# "zabbix-zabbix-helm-chart-agent", from Zabbix's own Helm chart
+# deployment pattern) to tag which node runs that agent; it doesn't exist
+# in this cluster since agent2 was installed via Ansible, not the Helm
+# chart, but the API call still needs to be permitted even to come back
+# empty.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -16,7 +30,7 @@ metadata:
   name: zabbix-monitoring
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "nodes/status", "pods", "namespaces"]
+    resources: ["nodes", "nodes/status", "pods", "namespaces", "endpoints"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
