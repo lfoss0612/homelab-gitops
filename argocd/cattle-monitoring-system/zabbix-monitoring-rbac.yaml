@@ -1,0 +1,33 @@
+# Read-only ServiceAccount for Zabbix's official Kubernetes templates
+# ("Kubernetes nodes by HTTP" etc. in homelab-ansible's zabbix.home.lan
+# monitoring). Scoped to nodes/pods/namespaces get/list/watch only, no write
+# access anywhere. The actual bearer token is generated out-of-band
+# (kubectl create token) and stored vault-encrypted in homelab-ansible,
+# never committed here — see CLAUDE.md "Never commit credentials".
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zabbix-monitoring
+  namespace: cattle-monitoring-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: zabbix-monitoring
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "nodes/status", "pods", "namespaces"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zabbix-monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: zabbix-monitoring
+subjects:
+  - kind: ServiceAccount
+    name: zabbix-monitoring
+    namespace: cattle-monitoring-system
