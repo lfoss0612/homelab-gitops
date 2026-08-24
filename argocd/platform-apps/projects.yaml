@@ -20,6 +20,7 @@ spec:
     - https://charts.jetstack.io
     - https://helm.ngc.nvidia.com/nvidia
     - https://charts.longhorn.io
+    - https://cdn.zabbix.com/zabbix/integrations/kubernetes-helm/7.4
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject

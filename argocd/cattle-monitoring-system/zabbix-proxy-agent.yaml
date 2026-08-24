@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zabbix-proxy-agent
+  namespace: argocd
+spec:
+  destination:
+    namespace: cattle-monitoring-system
+    server: https://kubernetes.default.svc
+  project: add-ons
+  source:
+    chart: zabbix-helm-chrt
+    helm:
+      parameters:
+        # Zabbix server on zabbix.home.lan (10.0.5.9) lives outside this
+        # cluster on 10.0.5.x - it cannot reach pod IPs on the CNI overlay
+        # network, which blocked kube-state-metrics scraping and
+        # Kubelet/control-plane metrics from Zabbix's Kubernetes
+        # templates (confirmed via zabbix_server.log: "cannot get URL:
+        # Connection timed out"). This proxy runs inside the cluster
+        # instead, where pod IPs ARE reachable, and relays data back to
+        # the external server. IP used instead of hostname to avoid a
+        # dependency on cluster DNS resolving external .home.lan names.
+        - name: zabbixProxy.env.ZBX_HOSTNAME
+          value: rke2-proxy
+        - name: zabbixProxy.env.ZBX_SERVER_HOST
+          value: "10.0.5.9:10051"
+        # 0 = active mode (proxy connects out to the server) - avoids
+        # needing an inbound firewall/NAT rule from zabbix.home.lan into
+        # the cluster. Matches the chart default; set explicitly anyway.
+        - name: zabbixProxy.env.ZBX_PROXYMODE
+          value: "0"
+        # This cluster already runs kube-state-metrics via the Rancher
+        # monitoring stack (rancher-monitoring-kube-state-metrics in this
+        # same namespace) - don't deploy a second one.
+        - name: kubeStateMetrics.enabled
+          value: "false"
+        - name: zabbixAgent.enabled
+          value: "true"
+      valuesObject:
+        # Without this the DaemonSet skips k8s-master.home.lan (RKE2's
+        # default node-role.kubernetes.io/control-plane:NoSchedule taint),
+        # leaving it uncovered for Kubelet-level metrics.
+        zabbixAgent:
+          tolerations:
+            - effect: NoSchedule
+              key: node-role.kubernetes.io/control-plane
+    repoURL: https://cdn.zabbix.com/zabbix/integrations/kubernetes-helm/7.4
+    # appVersion 7.4.1 - closest available match to the external Zabbix
+    # server's 7.4.13 (confirmed via `dpkg -l | grep zabbix-server` on
+    # zabbix.home.lan). Zabbix requires matching major.minor between
+    # server and proxy; same-minor patch differences are fully supported.
+    targetRevision: 1.5.8
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
