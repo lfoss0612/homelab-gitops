@@ -1,0 +1,33 @@
+# NodePort Service for kube-state-metrics, additive to the existing
+# Helm-managed ClusterIP Service (rancher-monitoring-kube-state-metrics) -
+# a separate resource rather than patching that one, so a future Rancher
+# monitoring Helm upgrade can't silently revert it.
+#
+# Zabbix's "Kubernetes cluster state by HTTP" template (linked to
+# k8s-master.home.lan in homelab-ansible) needs to scrape this service's
+# /metrics endpoint, but zabbix.home.lan sits outside the cluster on
+# 10.0.5.x with no route to the pod/ClusterIP overlay network - the
+# existing ClusterIP-only Service is unreachable from there
+# ("cannot get URL: Connection timed out" in zabbix_server.log). NodePort
+# exposes it on every node's real IP instead.
+#
+# Same selector as the Helm-managed Service - see:
+#   kubectl get svc rancher-monitoring-kube-state-metrics -n cattle-monitoring-system -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: zabbix-kube-state-metrics-nodeport
+  namespace: cattle-monitoring-system
+  labels:
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/instance: rancher-monitoring
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/instance: rancher-monitoring
+    app.kubernetes.io/name: kube-state-metrics
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      nodePort: 30808
