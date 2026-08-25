@@ -32,6 +32,34 @@ rules:
   - apiGroups: [""]
     resources: ["nodes", "nodes/status", "pods", "namespaces", "endpoints"]
     verbs: ["get", "list", "watch"]
+  # "nodes/metrics" added 2026-08-25, get only, to unblock the "Kubernetes
+  # Kubelet by HTTP" template — 30 permanently-unsupported items across the
+  # three discovered Kubelet hosts, and with them per-pod CPU and memory, which
+  # nothing else in this cluster's Zabbix collects. kube-state-metrics reports
+  # what a pod REQUESTS, never what it uses; consumption lives in the kubelet's
+  # cAdvisor endpoints and nowhere else Zabbix can currently see.
+  #
+  # nodes/metrics is EXACTLY what the kubelet asks for, not a guess. Probed
+  # with the service account's own token against the live kubelet:
+  #
+  #   GET https://10.2.5.2:10250/metrics/cadvisor
+  #   403 Forbidden (user=system:serviceaccount:cattle-monitoring-system:
+  #        zabbix-monitoring, verb=get, resource=nodes, subresource(s)=[metrics])
+  #
+  # Deliberately NOT nodes/proxy, which is the permission usually cited for
+  # this and which an earlier note in homelab-ansible guessed at. The kubelet
+  # is scraped directly on :10250 rather than through the API server proxy, so
+  # proxy access is not involved and granting it would widen this account for
+  # nothing. All 30 Forbidden items are on the Kubelet hosts; the API server,
+  # controller-manager and scheduler hosts have none, so no nonResourceURL
+  # grant for /metrics is needed either.
+  #
+  # Still read-only: "get" on a metrics endpoint. It exposes per-container
+  # resource usage, which is more detail than this account previously had, but
+  # confers no ability to read secrets, exec, or change anything.
+  - apiGroups: [""]
+    resources: ["nodes/metrics"]
+    verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
