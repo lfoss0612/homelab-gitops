@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../homelab-vault"
+		},
+		{
+			"path": "../../../home/lfoss/projects/homelab-vault.git"
+		},
+		{
+			"path": "../../../home/lfoss/projects/homelab-ansible"
+		},
+		{
+			"path": "../homelab-marketplace"
+		}
+	],
+	"settings": {}
+}

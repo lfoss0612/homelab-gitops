@@ -68,6 +68,33 @@ spec:
           tolerations:
             - effect: NoSchedule
               key: node-role.kubernetes.io/control-plane
+          # Lets the DaemonSet report each node's installed openclaw version to
+          # Zabbix (item key openclaw.version), which the 11 hosts running their
+          # own agent2 already do via a drop-in from homelab-ansible's
+          # openclaw.node.common role. These three nodes have no host-level
+          # agent since that role stopped installing one, so their drop-in is
+          # written to the node's filesystem and mounted in here instead.
+          #
+          # extraHostVolumeMounts (hostPath) rather than a ConfigMap because
+          # chart 1.5.8 offers no extraVolumes/extraObjects hook at all - its
+          # only volume escape hatch is this one, verified against
+          # `helm show values` for that exact version.
+          #
+          # Mounted at zabbix_agentd.d, NOT zabbix_agent2.d: both are on the
+          # container's Include list, but zabbix_agent2.d holds plugins.d and
+          # mounting over it would shadow the image's own plugin configs.
+          # zabbix_agentd.d is empty in the image, so nothing is lost.
+          #
+          # The hostPath must already exist - the chart sets no hostPath `type`,
+          # so kubelet will not create a missing directory and the pod would
+          # fail to start. homelab-ansible creates it (and the drop-in inside
+          # it) via playbooks/deploy-openclaw-version-userparam.yml, which must
+          # therefore run BEFORE this change syncs.
+          extraHostVolumeMounts:
+            - name: openclaw-userparams
+              hostPath: /etc/zabbix/agent2-userparams.d
+              mountPath: /etc/zabbix/zabbix_agentd.d
+              readOnly: true
     repoURL: https://cdn.zabbix.com/zabbix/integrations/kubernetes-helm/7.4
     # appVersion 7.4.1 - closest available match to the external Zabbix
     # server's 7.4.13 (confirmed via `dpkg -l | grep zabbix-server` on
