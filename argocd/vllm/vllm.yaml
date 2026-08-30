@@ -22,7 +22,21 @@ spec:
       prune: true
       selfHeal: true
   ignoreDifferences:
+    # jsonPointers alone only suppresses OutOfSync/diff REPORTING for this
+    # field -- it does NOT stop argocd-controller from writing its own value
+    # (the chart's replicaCount: 1) during an actual sync/apply. Discovered
+    # 2026-08-30: replicas had been manually scaled to 0 via the Rancher UI
+    # (field manager "rancher", confirmed via `--show-managed-fields`) for
+    # deliberate GPU time-sharing with ollama on the RTX 5090. A routine
+    # image-tag bump to this chart triggered a real sync, argocd-controller
+    # applied replicas: 1 from the template, and vLLM started loading a
+    # model concurrently with ollama's -- exactly the memory conflict this
+    # 0-replica state exists to prevent. managedFieldsManagers tells Argo to
+    # respect whichever value the "rancher" manager most recently set for
+    # this field instead of overwriting it on every sync.
     - group: apps
       kind: Deployment
       jsonPointers:
-        - /spec/replicas    
+        - /spec/replicas
+      managedFieldsManagers:
+        - rancher
