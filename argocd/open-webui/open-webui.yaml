@@ -20,6 +20,13 @@ spec:
           value: "644245094400"
         - name: ollama.runtimeClassName
           value: nvidia
+        # Pinned explicitly (was floating on the open-webui chart's own
+        # bundled default). 0.31.1 -> 0.33.2, 2026-08-29: checked upstream
+        # changelogs for 0.32.x/0.33.x, no breaking changes or env var
+        # behavior changes found (OLLAMA_NUM_PARALLEL/FLASH_ATTENTION/
+        # KV_CACHE_TYPE/MAX_LOADED_MODELS/KEEP_ALIVE all unaffected).
+        - name: ollama.image.tag
+          value: "0.33.2"
         - name: persistence.size
           value: 10Gi
         # GPU memory tuning: the RTX 5090 is shared with vllm (which holds a

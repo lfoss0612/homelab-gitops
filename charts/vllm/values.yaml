@@ -8,7 +8,7 @@ replicaCount: 1
 
 image:
   repository: vllm/vllm-openai
-  tag: v0.25.1
+  tag: v0.28.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -35,6 +35,13 @@ model:
 # Extra CLI args appended to the vllm serve command.
 extraArgs:
   - --reasoning-parser=qwen3
+  # v0.28.0 doubled the default max_num_batched_tokens (8192 -> 16384) and
+  # raised the Blackwell CUDA graph capture default to 1024. Both eat into
+  # the tight, deliberately-computed gpuMemoryUtilization budget above
+  # (shared with ollama, no memory isolation) -- pinned back to the value
+  # this chart was actually budgeted against, rather than letting the
+  # upstream default silently change memory assumptions on the next scale-up.
+  - --max-num-batched-tokens=8192
 
 # Name of a pre-existing Secret (created out-of-band, not in git) with a
 # HUGGING_FACE_HUB_TOKEN key. Only needed for gated models; Qwen is ungated.
