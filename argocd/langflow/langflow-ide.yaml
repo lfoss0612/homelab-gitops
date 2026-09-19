@@ -19,6 +19,14 @@ spec:
       valuesObject:
         langflow:
           backend:
+            # Pinned: `latest` + IfNotPresent let each node's image cache decide
+            # which code ran, so the pod could land on a node whose cached
+            # `latest` was older than the schema already written to the PVC.
+            # Alembic then saw only remove_* ops and refused to boot.
+            # backend and frontend are versioned independently upstream --
+            # langflowai/langflow-frontend has no 1.12.2 tag.
+            image:
+              tag: "1.12.2"
             env:
               - name: LANGFLOW_PORT
                 value: "7860"
@@ -38,8 +46,11 @@ spec:
                   secretKeyRef:
                     name: langflow-superuser
                     key: password
+          frontend:
+            image:
+              tag: "1.12.0"
     repoURL: https://langflow-ai.github.io/langflow-helm-charts
-    targetRevision: '*'
+    targetRevision: 0.1.2
   syncPolicy:
     automated:
       prune: true
