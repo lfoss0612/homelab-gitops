@@ -58,7 +58,13 @@ spec:
         - name: postgresql.auth.existingSecret
           value: litellm-postgresql-ext
     repoURL: ghcr.io/berriai
-    targetRevision: 1.x.x
+    # Pinned 2026-09-20. Was `1.x.x`, which drifted past the last chart this
+    # values file synced with (1.95.0, 2026-08-02): newer 1.x charts refuse
+    # postgresql.image.tag=latest ("must be pinned to an explicit version"),
+    # so helm template failed and the app sat in ComparisonError. Bump this
+    # deliberately, and pin postgresql.image.tag to the SAME MAJOR as the data
+    # directory (check `postgres --version` in the pod) before moving off 1.95.0.
+    targetRevision: 1.95.0
   syncPolicy:
     automated:
       prune: true
