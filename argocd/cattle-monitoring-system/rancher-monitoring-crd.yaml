@@ -12,6 +12,11 @@ spec:
     server: https://kubernetes.default.svc
   project: system
   source:
-    path: charts/rancher-monitoring-crd/108.0.0+up77.9.1-rancher.6
-    repoURL: https://github.com/rancher/charts
-    targetRevision: release-v2.14
+    # 2026-09-20: was the git path charts/rancher-monitoring-crd/108.0.0+up77.9.1-rancher.6
+    # on github.com/rancher/charts (branch release-v2.14). That repo is so large
+    # that the repo-server's `git fetch` times out (90s) after any cache reset,
+    # leaving the app Unknown. The same chart version is published on the Helm
+    # repo rancher-monitoring already uses; dry-run showed identical CRD content.
+    chart: rancher-monitoring-crd
+    repoURL: https://charts.rancher.io
+    targetRevision: 108.0.0+up77.9.1-rancher.6
