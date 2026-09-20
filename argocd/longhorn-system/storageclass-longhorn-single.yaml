@@ -1,0 +1,20 @@
+# Single-replica Longhorn class for re-creatable bulk data (Ollama model
+# store). The default `longhorn` class asks for 2 replicas; a 600Gi volume
+# can't get a second replica on this cluster (no other disk has room under the
+# 25% minimum-available limit), so it sits `degraded` indefinitely.
+# Only use this for data that can be re-pulled; the daily backup job still
+# covers it via the `default` recurring-job group.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-single
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "30"
+  fsType: ext4
+  dataLocality: best-effort
+  disableRevisionCounter: "true"
