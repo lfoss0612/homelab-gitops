@@ -110,7 +110,12 @@ spec:
               # instead (hand-patched copy of gnetId 12528; the stock
               # version's job picker had no filter/default and read empty).
     repoURL: https://charts.rancher.io
-    targetRevision: 109.0.2+up80.9.1-rancher.8
+    # 2026-09-20: was 109.0.2+up80.9.1-rancher.8, which charts.rancher.io no
+    # longer serves (removed from the index, tarball 404), so every sync failed
+    # with "chart ... not found". 109.0.1 has the same upstream (80.9.1) and the
+    # same Rancher build (.8). Dry-run against the live cluster showed only
+    # chart-version label changes, no workload image or pod-template changes.
+    targetRevision: 109.0.1+up80.9.1-rancher.8
   syncPolicy:
     automated:
       prune: true
