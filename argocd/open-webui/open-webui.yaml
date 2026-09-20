@@ -20,6 +20,11 @@ spec:
           value: "644245094400"
         - name: ollama.runtimeClassName
           value: nvidia
+        # TEMPORARY 2026-09-20: scaled to 0 while the model volume is moved to
+        # the 1-replica longhorn-single class (restore from backup). Set back
+        # to "1" once the restore is verified.
+        - name: ollama.replicaCount
+          value: "0"
         # Pinned explicitly (was floating on the open-webui chart's own
         # bundled default). 0.31.1 -> 0.33.2, 2026-08-29: checked upstream
         # changelogs for 0.32.x/0.33.x, no breaking changes or env var
