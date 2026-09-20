@@ -1,9 +1,9 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  finalizers:
-    - pre-delete-finalizer.argocd.argoproj.io
-    - pre-delete-finalizer.argocd.argoproj.io/cleanup
+  # No finalizers here on purpose: the live Application has none (Argo strips
+  # them), so declaring them left the parent platform-cattle-monitoring-system
+  # permanently OutOfSync. This app has no PreDelete hooks, so nothing is lost.
   name: rancher-monitoring-crd
   namespace: argocd
 spec:
