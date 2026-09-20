@@ -18,6 +18,10 @@ spec:
           value: "true"
         - name: ollama.persistentVolume.size
           value: "644245094400"
+        # 1-replica class: the 600Gi model store can't place a second replica
+        # on this cluster. Models are re-pullable and the daily backup covers it.
+        - name: ollama.persistentVolume.storageClass
+          value: longhorn-single
         - name: ollama.runtimeClassName
           value: nvidia
         # TEMPORARY 2026-09-20: scaled to 0 while the model volume is moved to
