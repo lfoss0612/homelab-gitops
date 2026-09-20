@@ -19,13 +19,13 @@ spec:
         - name: ollama.persistentVolume.size
           value: "644245094400"
         # NOTE: no ollama.persistentVolume.storageClass here on purpose. The live
-        # PVC is bound to the PV `open-webui-ollama-restored` (a 1-replica volume
-        # restored from backup 2026-09-20; that PV exists only in the cluster, its
-        # manifest was removed from git) but carries class `longhorn`, and a bound
-        # PVC's class is immutable, so setting longhorn-single makes the sync
-        # fail. To finish the move: recreate the PVC and PV (the PV must be
-        # pre-bound to open-webui/open-webui-ollama with class longhorn-single),
-        # then set ollama.persistentVolume.storageClass=longhorn-single.
+        # PVC is bound to the PV `open-webui-ollama-restored` (declared in
+        # argocd/longhorn-system/pv-open-webui-ollama-restored.yaml; a 1-replica
+        # volume restored from backup 2026-09-20) but carries class `longhorn`,
+        # and a bound PVC's class is immutable, so setting longhorn-single makes
+        # the sync fail. To finish the move: recreate the PVC (the PV is already
+        # pre-bound to it with class longhorn-single), then set
+        # ollama.persistentVolume.storageClass=longhorn-single.
         - name: ollama.runtimeClassName
           value: nvidia
         # Pinned explicitly (was floating on the open-webui chart's own

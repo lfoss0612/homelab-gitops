@@ -1,0 +1,34 @@
+# Static PV for the Ollama model store (`open-webui/open-webui-ollama` PVC), on
+# the 1-replica longhorn-single class. Restored 2026-09-20 from Longhorn backup
+# `backup-prerestage20260920` because the original 2-replica volume could not
+# place its second replica (600Gi, no disk with room).
+#
+# Limits worth knowing: this PV points at the Longhorn volume
+# `open-webui-ollama-restored`, which was restored BY HAND and is not declared
+# anywhere in git. On a from-scratch rebuild the volume would not exist until
+# it is restored from backup again. Declared here so Argo tracks the PV
+# (removing the manifest leaves it `OutOfSync`/requiresPruning, since prune is off).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: open-webui-ollama-restored
+spec:
+  capacity:
+    storage: 600Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: longhorn-single
+  volumeMode: Filesystem
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: open-webui-ollama
+    namespace: open-webui
+  csi:
+    driver: driver.longhorn.io
+    fsType: ext4
+    volumeHandle: open-webui-ollama-restored
+    volumeAttributes:
+      numberOfReplicas: "1"
+      staleReplicaTimeout: "30"
