@@ -14,18 +14,16 @@ spec:
       parameters:
         - name: persistence.storageClass
           value: longhorn
+        # TEMPORARY 2026-09-21: PVC class swap in progress. Ollama is stopped and
+        # the PVC removed (pruned) so it can be recreated on longhorn-single and
+        # rebind to the existing PV. The PV/Longhorn volume (Retain) are kept.
+        # Reverts to enabled=true / no replicaCount override in the next commit.
         - name: ollama.persistentVolume.enabled
-          value: "true"
+          value: "false"
+        - name: ollama.replicaCount
+          value: "0"
         - name: ollama.persistentVolume.size
           value: "644245094400"
-        # NOTE: no ollama.persistentVolume.storageClass here on purpose. The live
-        # PVC is bound to the PV `open-webui-ollama-restored` (declared in
-        # argocd/longhorn-system/pv-open-webui-ollama-restored.yaml; a 1-replica
-        # volume restored from backup 2026-09-20) but carries class `longhorn`,
-        # and a bound PVC's class is immutable, so setting longhorn-single makes
-        # the sync fail. To finish the move: recreate the PVC (the PV is already
-        # pre-bound to it with class longhorn-single), then set
-        # ollama.persistentVolume.storageClass=longhorn-single.
         - name: ollama.runtimeClassName
           value: nvidia
         # Pinned explicitly (was floating on the open-webui chart's own
