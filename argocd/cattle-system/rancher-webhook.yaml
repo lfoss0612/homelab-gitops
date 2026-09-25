@@ -29,3 +29,18 @@ spec:
     automated:
       prune: true
       selfHeal: true
+  # The chart's Deployment template has no replicas field at all (checked via
+  # `helm pull`+`helm template` — confirmed absent, not just unexposed via
+  # values), so there's no Helm parameter that can set it; Kubernetes defaults
+  # an omitted spec.replicas to 1 only at creation. Set to 2 live via
+  # `kubectl scale` instead (see homelab-vault DONE.md, Kubernetes, for when/why
+  # — single-replica rancher-webhook doubled the 2026-08-08 Rancher outage).
+  # ignoreDifferences keeps selfHeal from ever fighting that live value, same
+  # reasoning as rancher.yaml's bootstrap-secret env var above.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: rancher-webhook
+      namespace: cattle-system
+      jsonPointers:
+        - /spec/replicas

@@ -20,7 +20,7 @@ spec:
         - name: ingress.ingressClassName
           value: nginx
         - name: replicas
-          value: "1"
+          value: "2"
         - name: ingress.tls.source
           value: secret
         - name: ingress.tls.secretName
