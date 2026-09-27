@@ -85,18 +85,15 @@ spec:
           value: nvidia
         - name: replicaCount
           value: "1"
-        # Paused (0) during recovery of the open-webui-ollama PVC/volume
-        # (host OOM incidents 2026-09-26/27, see Claude memory
-        # project_pve-ai-ollama-oom-incident.md) - the PVC is still bound to
-        # the faulted open-webui-ollama-restored volume while a fresh restore
-        # is in progress. Restore to "1" once the PVC is re-pointed to the
-        # new restored volume and it's confirmed stable.
         # NOTE: this is ollama.replicaCount (the otwld/ollama-helm subchart's
         # own value), NOT the bare replicaCount above, which controls the
         # main open-webui StatefulSet - conflating the two briefly scaled the
-        # main app to 0 by mistake.
+        # main app to 0 by mistake. Was paused at 0 during PVC recovery
+        # (host OOM incidents 2026-09-26/27, see Claude memory
+        # project_pve-ai-ollama-oom-incident.md); PVC now re-pointed to a
+        # fresh restored volume (open-webui-ollama) and confirmed stable.
         - name: ollama.replicaCount
-          value: "0"
+          value: "1"
         - name: service.type
           value: LoadBalancer
         - name: extraEnvFrom[0].secretRef.name
