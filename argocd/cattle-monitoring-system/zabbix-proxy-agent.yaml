@@ -55,8 +55,26 @@ spec:
               value: 128M
             - name: ZBX_STARTJAVAPOLLERS
               value: "0"
+            # Surfaced 2026-09-27 debugging pve running hot: this proxy was
+            # consuming 2400-3275m CPU sustained (dwarfing everything else on
+            # k8s-master, including the ~1-core prometheus-adapter issue
+            # fixed the same day in rancher-monitoring.yaml), traced via its
+            # logs to a full ~2MB config sync from the server every 10-30s
+            # ("received configuration data ... datalen 19xxxxx"). This value
+            # is ConfigFrequency - how often an active proxy re-pulls its
+            # entire configuration cache - and was set to 10 (seconds) here.
+            # Not a deliberate tuning choice: `git log -p` shows it was
+            # mechanically carried over on 2026-08-23 fixing an unrelated bug
+            # (helm.parameters dotted overrides silently dropped by Helm's
+            # list/map coalesce, forcing this whole env block into a literal
+            # list), with no comment or reasoning for "10" specifically -
+            # unlike every other value in this block. Restored to Zabbix's
+            # own documented default (3600s / 1 hour); config changes (new
+            # hosts, items, macros) still take effect within an hour, which
+            # is plenty for how infrequently this repo's Zabbix setup
+            # playbooks actually run.
             - name: ZBX_PROXYCONFIGFREQUENCY
-              value: "10"
+              value: "3600"
         # Without this the DaemonSet skips k8s-master.home.lan (RKE2's
         # default node-role.kubernetes.io/control-plane:NoSchedule taint),
         # leaving it uncovered for Kubelet-level metrics. zabbixAgent.env
