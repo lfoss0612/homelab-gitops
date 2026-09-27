@@ -57,6 +57,17 @@ spec:
           value: latest
         - name: postgresql.auth.existingSecret
           value: litellm-postgresql-ext
+      # Surfaced 2026-09-27: no requests/limits at all, so the scheduler had
+      # no visibility into litellm's real ~1.1GB footprint on k8s-master.
+      # Request set just above observed usage, limit with headroom for
+      # request-routing/caching spikes.
+      valuesObject:
+        resources:
+          requests:
+            memory: 1536Mi
+            cpu: 100m
+          limits:
+            memory: 2Gi
     repoURL: ghcr.io/berriai
     # Pinned 2026-09-20. Was `1.x.x`, which drifted past the last chart this
     # values file synced with (1.95.0, 2026-08-02): newer 1.x charts refuse

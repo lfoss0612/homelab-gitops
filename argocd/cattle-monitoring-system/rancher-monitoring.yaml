@@ -43,6 +43,22 @@ spec:
         - name: global.cattle.clusterId
           value: local
       valuesObject:
+        # Surfaced 2026-09-27: no requests/limits at all, so the scheduler
+        # had no visibility into prometheus-adapter's real ~930MB footprint
+        # on k8s-master - unusually high for this component (normally
+        # ~100-200Mi), but its logs showed nothing abnormal (plain healthz
+        # probe traffic, no errors), so this is its real footprint here, not
+        # a leak. `prometheus-adapter` is a genuine Helm subchart dependency
+        # of this chart (confirmed via its Chart.yaml), so this key reaches
+        # the subchart directly even though rancher-monitoring's own default
+        # values.yaml doesn't document a resources passthrough for it.
+        prometheus-adapter:
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 100m
+            limits:
+              memory: 1536Mi
         grafana:
           sidecar:
             dashboards:

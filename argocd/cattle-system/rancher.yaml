@@ -36,6 +36,18 @@ spec:
           value: CATTLE_FEATURES
         - name: extraEnv[0].value
           value: managed-system-upgrade-controller=false
+      # Surfaced 2026-09-27: no requests/limits at all, so the scheduler had
+      # no visibility into rancher's real ~1.9GB footprint on k8s-master.
+      # Observed usage at the time: 1.9GB (replica on master), 1.4GB
+      # (replica on a worker) - request set below observed usage on the
+      # smaller replica, with headroom in the limit for growth.
+      valuesObject:
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 250m
+          limits:
+            memory: 2560Mi
     repoURL: https://releases.rancher.com/server-charts/latest
     targetRevision: 2.14.3
   # The chart injects CATTLE_BOOTSTRAP_PASSWORD into this Deployment via a
