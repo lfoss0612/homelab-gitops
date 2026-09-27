@@ -68,6 +68,41 @@ spec:
             cpu: 100m
           limits:
             memory: 2Gi
+        # Surfaced 2026-09-27: once real requests existed, litellm and
+        # prometheus-adapter both rescheduled onto k8s-worker-2 alongside a
+        # rancher replica, stacking ~3.5GB onto a node with only 7.68GiB
+        # total (88% used) - an uncoordinated pile-up from three independent
+        # scheduling decisions, not a deliberate placement. rancher's own
+        # chart hardcodes its affinity with no override hook, so this side
+        # can't reciprocate - but litellm+prometheus-adapter actively
+        # avoiding rancher AND each other is enough to get real spread
+        # across the 3 nodes. Soft (preferred), not required: a hard
+        # anti-affinity here risks Unschedulable if fewer than 3 nodes are
+        # ever available. namespaces: is load-bearing - podAntiAffinity only
+        # matches same-namespace pods by default, and these three charts
+        # each live in a different namespace (cattle-system, litellm,
+        # cattle-monitoring-system).
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values: ["rancher"]
+                  namespaces: ["cattle-system"]
+                  topologyKey: kubernetes.io/hostname
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app.kubernetes.io/name
+                        operator: In
+                        values: ["prometheus-adapter"]
+                  namespaces: ["cattle-monitoring-system"]
+                  topologyKey: kubernetes.io/hostname
     repoURL: ghcr.io/berriai
     # Pinned 2026-09-20. Was `1.x.x`, which drifted past the last chart this
     # values file synced with (1.95.0, 2026-08-02): newer 1.x charts refuse

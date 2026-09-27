@@ -59,6 +59,31 @@ spec:
               cpu: 100m
             limits:
               memory: 1536Mi
+          # Surfaced 2026-09-27: see the matching comment in
+          # argocd/litellm/litellm.yaml - same fix, other direction
+          # (avoiding rancher + litellm). Soft/preferred, and namespaces: is
+          # load-bearing for the same same-namespace-default reason.
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                        - key: app
+                          operator: In
+                          values: ["rancher"]
+                    namespaces: ["cattle-system"]
+                    topologyKey: kubernetes.io/hostname
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values: ["litellm"]
+                    namespaces: ["litellm"]
+                    topologyKey: kubernetes.io/hostname
         grafana:
           sidecar:
             dashboards:
