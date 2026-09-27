@@ -1,0 +1,37 @@
+# Static PV for the Ollama model store (`open-webui/open-webui-ollama` PVC), on
+# the 1-replica longhorn-single class. Replaces `open-webui-ollama-restored`
+# (see git history for pv-open-webui-ollama-restored.yaml), which was
+# unrecoverable after repeated pve-ai/k8s-worker-2 OOM incidents on
+# 2026-09-26/27 corrupted its single replica beyond salvage (see Claude
+# memory project_pve-ai-ollama-oom-incident.md). This PV points at a fresh
+# Longhorn volume restored by hand from backup `backup-262704cc5cdf49a0`
+# (2026-09-25) on 2026-09-27.
+#
+# Limits worth knowing: this volume was restored BY HAND and is not declared
+# anywhere in git. On a from-scratch rebuild it would not exist until
+# restored from backup again. Declared here so Argo tracks the PV (removing
+# the manifest leaves it `OutOfSync`/requiresPruning, since prune is off).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: open-webui-ollama
+spec:
+  capacity:
+    storage: 600Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: longhorn-single
+  volumeMode: Filesystem
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: open-webui-ollama
+    namespace: open-webui
+  csi:
+    driver: driver.longhorn.io
+    fsType: ext4
+    volumeHandle: open-webui-ollama
+    volumeAttributes:
+      numberOfReplicas: "1"
+      staleReplicaTimeout: "30"
