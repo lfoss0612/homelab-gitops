@@ -68,7 +68,19 @@ spec:
           value: OLLAMA_KEEP_ALIVE
         - forceString: true
           name: ollama.extraEnv[5].value
-          value: "-1"  
+          value: "30m"
+        # Resource limits: host VM (pve-ai/k8s-worker-2) was cut from 48GB to
+        # 16GB after repeated OOM-driven host freezes on 2026-09-26/27 (see
+        # homelab-ansible host_vars/pve-ai.home.lan.yml and Claude memory
+        # project_pve-ai-ollama-oom-incident.md). Now that the GPU (RTX 5090,
+        # 32GB VRAM) holds full model weights, system RAM no longer needs to
+        # cover CPU-offloaded layers - sized well under the new VM ceiling so
+        # a runaway container gets cleanly OOM-killed instead of starving the
+        # host again.
+        - name: ollama.resources.requests.memory
+          value: 2Gi
+        - name: ollama.resources.limits.memory
+          value: 8Gi
         - name: runtimeClassName
           value: nvidia
         - name: replicaCount
