@@ -53,12 +53,37 @@ spec:
         # the subchart directly even though rancher-monitoring's own default
         # values.yaml doesn't document a resources passthrough for it.
         prometheus-adapter:
+          # Surfaced 2026-09-27, same day as the memory fix above but a CPU
+          # investigation: pve's new CPU-temperature monitoring (see
+          # homelab-ansible/docs/cpu-temp-monitoring.md) showed pve.home.lan
+          # running hot, traced to k8s-master pegging ~250% CPU, traced to
+          # this pod alone burning ~1 full core. Root cause verified live via
+          # its own container args (`kubectl get pod ... -o
+          # jsonpath='{.spec.containers[0].args}'`): the chart's *default*
+          # `logLevel: 4` (`--v=4`) logs full klog-structured detail for
+          # every HTTP call, including the routine ~5-requests/30s discovery
+          # polling from the apiserver's own aggregation layer — that
+          # verbosity, not request volume, is what was visible in the logs.
+          # Left `metricsRelistInterval` (default 1m) and the chart's broad
+          # seriesQuery rules alone for now -- `kubectl get hpa -A` found
+          # zero HPAs anywhere in this cluster, i.e. nothing currently
+          # consumes custom.metrics.k8s.io at all, which is worth revisiting
+          # (narrow the rules, or drop this component) before touching that
+          # knob rather than just tuning it blind.
+          logLevel: 2
           resources:
             requests:
               memory: 1Gi
               cpu: 100m
             limits:
               memory: 1536Mi
+              # 500m is a defensive cap, not a measured comfortable ceiling:
+              # chosen because metricsRelistInterval/seriesQuery breadth were
+              # deliberately left untouched (see above), so this pod may still
+              # legitimately want more than its 100m request under that 1m
+              # relist cycle. The point is bounding it well under the ~1000m
+              # it was observed sustaining, not preventing all throttling.
+              cpu: 500m
           # Surfaced 2026-09-27: see the matching comment in
           # argocd/litellm/litellm.yaml - same fix, other direction
           # (avoiding rancher + litellm). Soft/preferred, and namespaces: is
