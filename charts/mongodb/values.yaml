@@ -1,0 +1,15 @@
+image:
+  repository: mongo
+  # Pinned minor: `latest` would let a node's image cache pick the data-file version.
+  tag: "8.0"
+# Secret with keys `username` and `password`, created out-of-band (see argocd/mongodb/mongodb.yaml)
+existingSecret: mongodb-root
+service:
+  type: LoadBalancer
+  port: 27017
+persistence:
+  storageClass: longhorn
+  size: 20Gi
+resources:
+  requests: {cpu: 100m, memory: 512Mi}
+  limits: {memory: 2Gi}

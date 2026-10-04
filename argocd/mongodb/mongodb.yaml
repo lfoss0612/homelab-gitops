@@ -1,0 +1,31 @@
+# Before this Application can sync successfully, create the root credentials
+# out-of-band (not in git), e.g.:
+#   kubectl create namespace mongodb
+#   kubectl -n mongodb create secret generic mongodb-root \
+#     --from-literal=username=root --from-literal=password="$(openssl rand -base64 24 | tr -d '/+=')"
+# Note: MONGO_INITDB_* only applies on first start of an empty volume; changing
+# the secret later does not change the DB password.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mongodb
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lfoss0612/homelab-gitops.git
+    targetRevision: HEAD
+    path: charts/mongodb
+    helm:
+      releaseName: mongodb
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mongodb
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
