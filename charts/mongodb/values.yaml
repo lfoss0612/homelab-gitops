@@ -13,3 +13,5 @@ persistence:
 resources:
   requests: {cpu: 100m, memory: 512Mi}
   limits: {memory: 2Gi}
+# mongo 8.0 refuses to start on kernels >= 6.19 (SERVER-121912); pin to older-kernel nodes
+nodeSelector: {}

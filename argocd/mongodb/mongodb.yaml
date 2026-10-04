@@ -20,6 +20,12 @@ spec:
     path: charts/mongodb
     helm:
       releaseName: mongodb
+      valuesObject:
+        # k8s-worker-2 runs kernel 7.0, which mongo 8.0 refuses to start on
+        # (https://jira.mongodb.org/browse/SERVER-121912). Remove once a fixed
+        # image tag is adopted or the node kernel is held below 6.19.
+        nodeSelector:
+          kubernetes.io/hostname: k8s-worker.home.lan
   destination:
     server: https://kubernetes.default.svc
     namespace: mongodb
