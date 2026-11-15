@@ -21,9 +21,17 @@ spec:
     helm:
       releaseName: mongodb
       valuesObject:
-        # k8s-worker-2 runs kernel 7.0, which mongo 8.0 refuses to start on
-        # (https://jira.mongodb.org/browse/SERVER-121912). Remove once a fixed
-        # image tag is adopted or the node kernel is held below 6.19.
+        # PAUSED 2026-11-15. k8s-worker moved to Ubuntu 26.04 (kernel 7.0), and
+        # mongo 8.0 refuses to start on kernels >= 6.19
+        # (https://jira.mongodb.org/browse/SERVER-121912); the only node that
+        # was below 6.19 is gone. The GLIBC_TUNABLES=glibc.pthread.rseq=0
+        # workaround was tried (330c249, reverted in 26158ef) and the startup
+        # check ignores it. The data volume (PVC data-mongodb-0, Longhorn) is
+        # kept and has a manual backup from the pause. media_search, the only
+        # known consumer, is unused. To resume: set replicas back to 1 once a
+        # mongo release starts on Ubuntu's 7.0.0-NN kernel numbering
+        # (SERVER-136848) or a node below 6.19 exists again.
+        replicas: 0
         nodeSelector:
           kubernetes.io/hostname: k8s-worker.home.lan
   destination:

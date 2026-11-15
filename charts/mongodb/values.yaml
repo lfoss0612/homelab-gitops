@@ -1,3 +1,5 @@
+# 0 pauses MongoDB without touching its data volume (the PVC is kept).
+replicas: 1
 image:
   repository: mongo
   # Pinned minor: `latest` would let a node's image cache pick the data-file version.
