@@ -27,9 +27,6 @@ spec:
               valueFrom: {secretKeyRef: {name: {{ .Values.existingSecret }}, key: username}}
             - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom: {secretKeyRef: {name: {{ .Values.existingSecret }}, key: password}}
-{{- with .Values.extraEnv }}
-{{ toYaml . | indent 12 }}
-{{- end }}
           volumeMounts:
             - {name: data, mountPath: /data/db}
           readinessProbe:

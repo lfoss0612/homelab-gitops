@@ -15,14 +15,3 @@ resources:
   limits: {memory: 2Gi}
 # mongo 8.0 refuses to start on kernels >= 6.19 (SERVER-121912); pin to older-kernel nodes
 nodeSelector: {}
-# Extra container env vars (list of Kubernetes EnvVar objects).
-# GLIBC_TUNABLES=glibc.pthread.rseq=0 is the community-reported workaround for
-# the tcmalloc rseq ABI violation behind SERVER-121912 (stops glibc registering
-# rseq, which tcmalloc then handles itself). It is NOT in MongoDB's official docs
-# and it is unverified whether the 8.0 startup check honours it: if mongod still
-# logs "cannot start: Linux kernel versions 6.19 and newer", it does not, and this
-# can be removed. Also remove once a mongo image that fixes SERVER-121912 on
-# Ubuntu's 7.0.0-NN kernel numbering is adopted (see SERVER-136848).
-extraEnv:
-  - name: GLIBC_TUNABLES
-    value: glibc.pthread.rseq=0
