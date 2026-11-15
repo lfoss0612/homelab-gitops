@@ -4,7 +4,9 @@
 # channels/latest, which auto-advanced the cluster to RKE2 1.36 ahead
 # of Rancher's support matrix). Bump `version` deliberately, in lockstep
 # with the Rancher chart version in rancher.yaml, once Rancher supports
-# the target RKE2 minor.
+# the target RKE2 minor. 2026-11-15: bumped to v1.36.6 with Rancher 2.15.3; agent-plan
+# skips nodes labelled rke2-upgrade=disabled, used to upgrade one worker at a
+# time after a manual Longhorn-safe drain (the plan drains with eviction off).
 apiVersion: upgrade.cattle.io/v1
 kind: Plan
 metadata:
@@ -30,7 +32,7 @@ spec:
       value: "true"
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.36.1+rke2r2
+  version: v1.36.6+rke2r1
 ---
 apiVersion: upgrade.cattle.io/v1
 kind: Plan
@@ -64,4 +66,4 @@ spec:
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.36.1+rke2r2
+  version: v1.36.6+rke2r1
