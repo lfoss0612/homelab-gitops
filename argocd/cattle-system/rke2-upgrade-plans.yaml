@@ -15,9 +15,10 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
-  drain:
-    deleteLocalData: true
-    force: true
+  # No plan-level drain: nodes are cordoned and drained by hand first
+  # (Longhorn-safe: instance-manager pods excluded). A plan drain hung on the
+  # instance-manager PDB (2026-11-15) and, with eviction disabled, would delete
+  # instance managers under attached volumes.
   nodeSelector:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
@@ -42,10 +43,6 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
-  drain:
-    disableEviction: true
-    force: true
-    skipWaitForDeleteTimeout: 60
   jobActiveDeadlineSecs: 900
   nodeSelector:
     matchExpressions:
@@ -67,3 +64,25 @@ spec:
   upgrade:
     image: rancher/rke2-upgrade
   version: v1.36.6+rke2r1
+---
+# Service account the Plans above run their upgrade Jobs as. It used to be
+# created by Rancher itself; the 2.15 upgrade removed it (2026-11-15), so the
+# server-plan Job failed with "serviceaccount system-upgrade not found".
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: system-upgrade
+  namespace: cattle-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system-upgrade
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: system-upgrade
+    namespace: cattle-system
