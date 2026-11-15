@@ -19,7 +19,7 @@ spec:
         - name: features.no-cert-manager.enabled
           value: "true"
     repoURL: https://charts.rancher.io
-    targetRevision: 109.0.3+up0.26.3
+    targetRevision: 110.0.4+up0.27.4
   ignoreDifferences:
     # RBAC-aggregated ClusterRole: rules are populated by the API
     # server's aggregation controller, not the chart, so this always

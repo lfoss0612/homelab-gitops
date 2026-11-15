@@ -11,11 +11,8 @@ spec:
   source:
     chart: rancher
     helm:
-      # Rancher 2.14's chart declares kubeVersion "< 1.36.0-0", which blocks
-      # templating against this RKE2 1.36 cluster. Override the version Helm
-      # sees so the chart renders. NOTE: running Rancher 2.14 on K8s 1.36 is
-      # unsupported by SUSE until 2.15 GA / a 2.14.x+KDM backport adds 1.36.
-      kubeVersion: "1.35.0"
+      # Rancher 2.15 supports Kubernetes 1.36 (chart kube-version < 1.37), so the
+      # old kubeVersion override that 2.14 needed is gone.
       parameters:
         - name: ingress.ingressClassName
           value: nginx
@@ -49,7 +46,7 @@ spec:
           limits:
             memory: 2560Mi
     repoURL: https://releases.rancher.com/server-charts/latest
-    targetRevision: 2.14.3
+    targetRevision: 2.15.3
   # The chart injects CATTLE_BOOTSTRAP_PASSWORD into this Deployment via a
   # pre-install/pre-upgrade hook Secret (bootstrap-secret) read back with
   # Helm's `lookup`, which plain template rendering can never reproduce.

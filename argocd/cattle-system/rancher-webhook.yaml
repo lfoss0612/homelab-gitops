@@ -24,7 +24,7 @@ spec:
         - name: priorityClassName
           value: rancher-critical
     repoURL: https://charts.rancher.io
-    targetRevision: 109.0.3+up0.10.7
+    targetRevision: 110.0.4+up0.11.4
   syncPolicy:
     automated:
       prune: true
