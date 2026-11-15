@@ -32,8 +32,14 @@ spec:
         # changelogs for 0.32.x/0.33.x, no breaking changes or env var
         # behavior changes found (OLLAMA_NUM_PARALLEL/FLASH_ATTENTION/
         # KV_CACHE_TYPE/MAX_LOADED_MODELS/KEEP_ALIVE all unaffected).
+        # 0.33.2 -> 0.40.16, 2026-11-15: no env var changes found. NOTE since
+        # 0.40.2: models are converted in the background on first run and the
+        # original is kept as a backup, so the 590G volume (421G used) fills
+        # as models are used; see the v0.40.2 release notes for the cleanup
+        # snippet. The image bundles its own CUDA 12/13 runtime; the host
+        # driver (615.x, CUDA 13.4) is newer than what it needs.
         - name: ollama.image.tag
-          value: "0.33.2"
+          value: "0.40.16"
         - name: persistence.size
           value: 10Gi
         # GPU memory tuning: the RTX 5090 is shared with vllm (which holds a
