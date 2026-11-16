@@ -21,17 +21,15 @@ spec:
           value: "false"
         - name: devicePlugin.config.name
           value: time-slicing-config
-        # v26.7 chart defaults that would change behaviour here, pinned to the
-        # previous behaviour (2026-11-16):
-        # - ccManager (Confidential Computing) flips to enabled/defaultMode on;
-        #   meaningless on an RTX 5090.
-        # - dcgmExporter.serviceMonitor flips to enabled; the operator's would be
-        #   named nvidia-dcgm-exporter in gpu-operator, colliding with our own
-        #   argocd/cattle-monitoring-system/dcgm-exporter-servicemonitor.yaml and
-        #   double-scraping.
+        # v26.7 chart default pinned to the previous behaviour (2026-11-16):
+        # ccManager (Confidential Computing) flips to enabled/defaultMode on;
+        # meaningless on an RTX 5090.
         - name: ccManager.enabled
           value: "false"
-        - name: dcgmExporter.serviceMonitor.enabled
-          value: "false"
+        # dcgmExporter.serviceMonitor is left at the v26.7 default (enabled): the
+        # operator now creates the nvidia-dcgm-exporter ServiceMonitor itself. With
+        # it disabled the operator DELETES any ServiceMonitor of that name, which
+        # fought the hand-written one we used to keep in
+        # argocd/cattle-monitoring-system/dcgm-exporter-servicemonitor.yaml (removed).
     repoURL: https://helm.ngc.nvidia.com/nvidia
     targetRevision: v26.7.2
