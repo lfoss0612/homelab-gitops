@@ -31,6 +31,12 @@ spec:
         # the chart defaults; the rest are carried over unchanged since
         # Helm replaces (doesn't merge) list values.
         zabbixProxy:
+          # Chart 1.5.8 is the newest 7.4 chart and still pins alpine-7.4.1;
+          # override the tag so the proxy matches the external Zabbix server
+          # (7.4.16 as of 2026-11-16). Same-minor patch differences are supported
+          # either way; matching just avoids running 15 patch releases behind.
+          image:
+            tag: alpine-7.4.16
           env:
             - name: ZBX_PROXYMODE
               value: "0"
@@ -83,6 +89,8 @@ spec:
         # the proxy queries each agent pod passively from inside the
         # cluster, then reports up to the external server itself.
         zabbixAgent:
+          image:
+            tag: alpine-7.4.16
           tolerations:
             - effect: NoSchedule
               key: node-role.kubernetes.io/control-plane
@@ -114,9 +122,9 @@ spec:
               mountPath: /etc/zabbix/zabbix_agentd.d
               readOnly: true
     repoURL: https://cdn.zabbix.com/zabbix/integrations/kubernetes-helm/7.4
-    # appVersion 7.4.1 - closest available match to the external Zabbix
-    # server's 7.4.13 (confirmed via `dpkg -l | grep zabbix-server` on
-    # zabbix.home.lan). Zabbix requires matching major.minor between
+    # appVersion 7.4.1 (images overridden to 7.4.16 in valuesObject above) vs the
+    # external Zabbix server's 7.4.16 (confirmed via `dpkg -l | grep zabbix-server`
+    # on zabbix.home.lan). Zabbix requires matching major.minor between
     # server and proxy; same-minor patch differences are fully supported.
     targetRevision: 1.5.8
   syncPolicy:
