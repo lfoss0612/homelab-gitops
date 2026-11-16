@@ -40,6 +40,11 @@ spec:
         # driver (615.x, CUDA 13.4) is newer than what it needs.
         - name: ollama.image.tag
           value: "0.40.16"
+        # Bundled websocket Redis (no persistence, only websocket session state).
+        # 7.4.2 -> 7.4.12 (2026-11-16): newest 7.4 patch on the same Alpine base;
+        # deliberately not crossing to Redis 8.x.
+        - name: websocket.redis.image.tag
+          value: 7.4.12-alpine3.21
         - name: persistence.size
           value: 10Gi
         # GPU memory tuning: the RTX 5090 is shared with vllm (which holds a
