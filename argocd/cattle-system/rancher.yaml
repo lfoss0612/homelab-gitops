@@ -31,8 +31,14 @@ spec:
         # this Application is synced.
         - name: extraEnv[0].name
           value: CATTLE_FEATURES
+        # turtles=false (2026-11-16): stop Rancher's systemcharts controller from
+        # installing/upgrading rancher-turtles itself, so Argo CD
+        # (argocd/cattle-system/rancher-turtles.yaml) is its only owner. This is a
+        # startup-only feature flag. NOTE: turning it on->off makes Rancher helm-
+        # uninstall its turtles release and delete cattle-turtles-system once.
         - name: extraEnv[0].value
-          value: managed-system-upgrade-controller=false
+          forceString: true
+          value: managed-system-upgrade-controller=false,turtles=false
       # Surfaced 2026-09-27: no requests/limits at all, so the scheduler had
       # no visibility into rancher's real ~1.9GB footprint on k8s-master.
       # Observed usage at the time: 1.9GB (replica on master), 1.4GB
