@@ -26,6 +26,18 @@ spec:
           value: grafana-dashboards
         - name: prometheus.prometheusSpec.retention
           value: 10d
+        # Memory: the chart default (750Mi request / 3000Mi limit) is too tight for
+        # this cluster. 2026-11-16: ~365k head series at ~10k samples/s used
+        # ~2.5GB steady with a 7-day peak working set of ~3.09GB (at the limit),
+        # and it was OOM-killed ~51 times in a week, worst during WAL replay after
+        # a restart. 5Gi limit leaves ~2x headroom for replay and compaction;
+        # k8s-worker-2 (where it runs) had ~11GB of real memory free. CPU keeps the
+        # chart defaults. If it grows again, cut series (high-cardinality
+        # metrics) before raising this further.
+        - name: prometheus.prometheusSpec.resources.requests.memory
+          value: 3Gi
+        - name: prometheus.prometheusSpec.resources.limits.memory
+          value: 5Gi
         - name: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName
           value: longhorn
         - name: prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage
