@@ -29,7 +29,10 @@ spec:
         # accepted it silently. PostgREST's /ready (our readiness probe) stays 503
         # while its listener cannot start. Not using the listener matches what
         # effectively happened before; schema changes now need a PostgREST restart.
-        - name: postgrest.dbChannelEnabled
+        # forceString: Helm would turn a bare false into a boolean, and the chart's
+        # `if .Values.postgrest.dbChannelEnabled` would then skip the env var.
+        - forceString: true
+          name: postgrest.dbChannelEnabled
           value: "false"
         - name: service.type
           value: LoadBalancer
