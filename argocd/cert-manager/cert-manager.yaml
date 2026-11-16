@@ -16,5 +16,20 @@ spec:
           value: "true"
         - name: prometheus.servicemonitor.enabled
           value: "true"
+        # 2026-11-16: Argo CD now owns the CRDs. They were installed by an old
+        # Helm install at v1.19.1 and nothing upgraded them (crds.enabled defaulted
+        # to false), so the controller ran two minors ahead of its CRDs. keep=true
+        # adds helm.sh/resource-policy: keep so removing the app never deletes
+        # the CRDs (and with them every Certificate/Issuer).
+        - name: crds.enabled
+          value: "true"
+        - name: crds.keep
+          value: "true"
     repoURL: https://charts.jetstack.io
-    targetRevision: v1.20.2
+    targetRevision: v1.21.3
+  syncPolicy:
+    # Manual sync (no `automated`), as before. ServerSideApply is required:
+    # the Challenge, Issuer and ClusterIssuer CRDs are > 262144 bytes, which
+    # exceeds the client-side `last-applied-configuration` annotation limit.
+    syncOptions:
+      - ServerSideApply=true
