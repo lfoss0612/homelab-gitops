@@ -59,7 +59,14 @@ spec:
               yugabyted-ui: "15433"
             extraArgs: {}
     repoURL: https://charts.yugabyte.com
-    targetRevision: 2025.2.2
+    # 2026-11-16: 2025.2.2 (2025.2.2.2-b11) -> 2025.2.8 (2025.2.8.1-b8), the newest
+    # patch on the LTS line; deliberately not the 2026.1 STS line. NOTE this chart
+    # drops `release: yugabyte` from the yb-master/yb-tserver StatefulSet selectors,
+    # and selectors are immutable, so the StatefulSet objects had to be deleted with
+    # `--cascade=orphan` (pods and PVCs keep running) for Argo to recreate them.
+    # Then: yb-admin promote_auto_flags and upgrade_ysql. Longhorn backups of all
+    # four volumes were taken first.
+    targetRevision: 2025.2.8
   syncPolicy:
     automated:
       selfHeal: true
