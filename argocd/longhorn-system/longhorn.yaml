@@ -27,5 +27,13 @@ spec:
           value: "2"
         - name: metrics.serviceMonitor.enabled
           value: "true"
+        # 1.13 renders six NetworkPolicies on the longhorn-system pods whenever
+        # restrictInternalTraffic is true (the default); the chart's
+        # networkPolicies.enabled flag does NOT gate them. Left on, they would
+        # filter internal Longhorn traffic and block Prometheus scraping of
+        # longhorn-manager (no metricsScrapeSources configured). Off keeps the
+        # pre-1.13 behaviour (no policies). Revisit deliberately if wanted.
+        - name: networkPolicies.restrictInternalTraffic
+          value: "false"
     repoURL: https://charts.longhorn.io
-    targetRevision: 1.12.0
+    targetRevision: 1.13.0
