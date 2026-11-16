@@ -23,6 +23,14 @@ spec:
           value: postgrest-db-secret
         - name: postgrest.dbAnonRole
           value: web_anon
+        # 2026-11-16: LISTEN/NOTIFY off. YugabyteDB 2025.2.8 rejects LISTEN with
+        # "LISTEN/NOTIFY is disabled" unless the tserver flag
+        # ysql_yb_enable_listen_notify is on (it is false by default); 2025.2.2
+        # accepted it silently. PostgREST's /ready (our readiness probe) stays 503
+        # while its listener cannot start. Not using the listener matches what
+        # effectively happened before; schema changes now need a PostgREST restart.
+        - name: postgrest.dbChannelEnabled
+          value: "false"
         - name: service.type
           value: LoadBalancer
   destination:
