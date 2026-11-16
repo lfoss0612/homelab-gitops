@@ -31,11 +31,14 @@ spec:
         # this Application is synced.
         - name: extraEnv[0].name
           value: CATTLE_FEATURES
-        # turtles=false (2026-11-16): stop Rancher's systemcharts controller from
-        # installing/upgrading rancher-turtles itself, so Argo CD
-        # (argocd/cattle-system/rancher-turtles.yaml) is its only owner. This is a
-        # startup-only feature flag. NOTE: turning it on->off makes Rancher helm-
-        # uninstall its turtles release and delete cattle-turtles-system once.
+        # turtles=false (2026-11-16): Rancher Turtles (Cluster API integration) is
+        # deliberately OFF. This is a single-cluster install with no downstream
+        # clusters, so nothing needs it. With it off, Rancher's systemcharts
+        # controller helm-uninstalls the release and deletes cattle-turtles-system
+        # on every reconcile, so it cannot be run by Argo CD either. Costs:
+        # creating downstream clusters from Rancher won't work. To restore, drop
+        # `turtles=false` and let Rancher reinstall it. The CAPI CRDs were left
+        # behind by the uninstall (Helm does not remove CRDs).
         - name: extraEnv[0].value
           forceString: true
           value: managed-system-upgrade-controller=false,turtles=false
