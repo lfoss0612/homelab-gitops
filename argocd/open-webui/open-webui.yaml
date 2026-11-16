@@ -117,7 +117,12 @@ spec:
     # Pinned deliberately. Was '*' (auto-upgrade), which silently jumped to
     # 15.2.0 on 2026-07-18 and reinitialized an empty SQLite webui.db, losing
     # all users/settings. Bump this explicitly after reviewing release notes.
-    targetRevision: 15.2.0
+    # 2026-11-16: 15.2.0 -> 18.3.0 (app 0.10.2 -> 0.13.3). The rendered chart diff
+    # is only the app image, a revisionHistoryLimit and PVC labels. The real data
+    # is the `openwebui` database on Yugabyte (DATABASE_URL from the open-webui-db
+    # secret), which the app migrates forward on first start, one-way: a logical
+    # ysql_dump and Longhorn backups were taken first (schema was 42e2978c7933).
+    targetRevision: 18.3.0
   syncPolicy:
     automated:
       prune: true
