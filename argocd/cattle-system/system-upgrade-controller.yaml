@@ -1,3 +1,5 @@
+# Chart version tracks the one Rancher 2.15 installs itself (system-upgrade-controller
+# 110.0.0); Rancher and Argo both render this release, so keep them identical.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -17,7 +19,7 @@ spec:
         - name: priorityClassName
           value: rancher-critical
     repoURL: https://charts.rancher.io
-    targetRevision: 109.0.2
+    targetRevision: 110.0.0
   syncPolicy:
     automated:
       prune: true
