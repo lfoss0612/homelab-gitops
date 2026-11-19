@@ -143,7 +143,7 @@ else
       IFS='|' read -r vol ns pvc <<<"$item"
       name="pre-$label-$(openssl rand -hex 4)"
       snapname[$vol]="$name"
-      kubectl create -f - >/dev/null <<EOF
+      kubectl create -f - >/dev/null 2> >(grep -v 'prefer a domain-qualified' >&2) <<EOF
 apiVersion: longhorn.io/v1beta2
 kind: Snapshot
 metadata:
@@ -169,7 +169,7 @@ EOF
       IFS='|' read -r vol ns pvc <<<"$item"
       [ -n "${snapname[$vol]:-}" ] || continue
       name="${snapname[$vol]}"
-      kubectl create -f - >/dev/null <<EOF
+      kubectl create -f - >/dev/null 2> >(grep -v 'prefer a domain-qualified' >&2) <<EOF
 apiVersion: longhorn.io/v1beta2
 kind: Backup
 metadata:
