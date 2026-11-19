@@ -37,3 +37,17 @@ scripts/chart-outdated.py          # only what is behind
 scripts/chart-outdated.py --all    # everything
 scripts/chart-outdated.py --json
 ```
+
+## chart-diff.py
+
+Read-only. Renders an Argo CD Helm app at two chart versions with the values the Application really
+uses and flags the dangerous changes: immutable selector changes, CRDs (size), new NetworkPolicies,
+removed RBAC objects, Helm hooks, values the Application sets that the new chart no longer declares,
+and every image change. Writes the full rendered diff to a mode-700 temp directory.
+
+```bash
+scripts/chart-diff.py yugabyte --new 2026.1.3        # old = what the Application pins today
+scripts/chart-diff.py argocd 10.18.0 10.18.2
+```
+
+The `chart-upgrade` skill (`.claude/skills/chart-upgrade/`) is the checklist that uses it.
