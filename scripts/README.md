@@ -51,3 +51,18 @@ scripts/chart-diff.py argocd 10.18.0 10.18.2
 ```
 
 The `chart-upgrade` skill (`.claude/skills/chart-upgrade/`) is the checklist that uses it.
+
+## longhorn-engine-upgrade.sh
+
+Live engine upgrade (no detach) of Longhorn volumes to a new engine image, one volume at a time, run
+after the chart bump. Refuses to continue unless each volume is attached, healthy and every replica is
+`RW` before and after; optional per-namespace gate commands (`--gate NS=CMD`) for databases, and gated
+namespaces go last. Detached volumes just get the image set; degraded ones are skipped and listed. Dry
+run by default; try `--volume <one> --apply` first. Prints the old engine image to delete once it has no
+references.
+
+```bash
+scripts/longhorn-engine-upgrade.sh                                  # plan
+scripts/longhorn-engine-upgrade.sh --volume pvc-... --apply         # the test volume
+scripts/longhorn-engine-upgrade.sh --apply --gate 'yugabytedb=<command that must succeed>'
+```
