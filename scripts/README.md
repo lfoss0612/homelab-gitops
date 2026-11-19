@@ -24,3 +24,16 @@ scripts/backup-before-upgrade.sh --label yb-2025-3 --namespaces yugabytedb --etc
 - The export and dumps go to `~/.local/share/homelab-upgrade-backups/<label>-<time>/` (directory
   mode 700). They contain secrets: never commit them.
 - Nothing here deletes anything. Old `pre-*` snapshots and backups are removed by hand.
+
+## chart-outdated.py
+
+Read-only. Lists every Argo CD Helm app whose chart is behind the latest in its repository, in the
+order to upgrade (tier 1 routine first, Argo CD last), with the size of the jump and the chart's home
+page. Tiers and per-app care come from [docs/app-upgrade-risks.md](../docs/app-upgrade-risks.md).
+Needs `kubectl` and `helm`; uses a throw-away helm config, so your `helm repo` list is untouched.
+
+```bash
+scripts/chart-outdated.py          # only what is behind
+scripts/chart-outdated.py --all    # everything
+scripts/chart-outdated.py --json
+```
