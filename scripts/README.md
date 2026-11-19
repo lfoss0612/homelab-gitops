@@ -66,3 +66,20 @@ scripts/longhorn-engine-upgrade.sh                                  # plan
 scripts/longhorn-engine-upgrade.sh --volume pvc-... --apply         # the test volume
 scripts/longhorn-engine-upgrade.sh --apply --gate 'yugabytedb=<command that must succeed>'
 ```
+
+## gpu-check.sh
+
+Read-only health check for the GPU node after a kernel, driver, GPU operator or Ollama change: the
+node advertises the GPU, the GPU operator pods are healthy, `nvidia-smi` works inside the Ollama pod
+(catches a driver/library mismatch), Ollama's version against the pinned tag and the latest release,
+and the model list is intact. `--probe MODEL` also loads a model and checks it runs fully on the GPU
+(opt-in: it uses GPU memory). DKMS coverage of the next kernel is a host check, asserted by
+`fleet-reboot.yml` in homelab-ansible.
+
+```bash
+scripts/gpu-check.sh
+scripts/gpu-check.sh --probe qwen3:14b
+```
+
+To update Ollama: change `ollama.image.tag` in `argocd/open-webui/open-webui.yaml` (the
+`chart-upgrade` skill's steps apply; the models volume is not backed up), sync, then run this.
