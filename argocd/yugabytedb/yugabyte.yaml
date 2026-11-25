@@ -67,6 +67,22 @@ spec:
     # Then: yb-admin promote_auto_flags and upgrade_ysql. Longhorn backups of all
     # four volumes were taken first.
     targetRevision: 2025.2.8
+  # 2026-11-24: homelab-ansible fleet-reboot.yml scales yb-tserver and yb-master to 0 before it drains a
+  # node that hosts them (their PDBs allow 0 disruptions, so a graceful drain can never succeed) and back
+  # to 1 afterwards. Without this, selfHeal would put the replicas back mid-reboot.
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: yb-master
+      jqPathExpressions:
+        - .spec.replicas
+    - group: apps
+      kind: StatefulSet
+      name: yb-tserver
+      jqPathExpressions:
+        - .spec.replicas
   syncPolicy:
     automated:
       selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
