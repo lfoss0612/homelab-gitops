@@ -36,6 +36,13 @@ spec:
           cm:
             url: https://argocd.fosshomelab.duckdns.org
             accounts.lfoss: login,apiKey
+            # Read-only service account for the argocd MCP server
+            # (argocd/apps/mcp-argocd.yaml). apiKey only, no login - it never
+            # authenticates interactively, so it needs no password. Gets
+            # role:readonly from rbac.policy.default below (no explicit
+            # policy.csv grant needed). Token generated out of band:
+            #   argocd account generate-token --account mcp-readonly
+            accounts.mcp-readonly: apiKey
           params:
             server.insecure: true
           rbac:
