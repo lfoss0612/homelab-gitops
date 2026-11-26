@@ -80,6 +80,11 @@ spec:
               url: http://mcp-huggingface.mcp.svc.cluster.local:80/mcp
               transport: http
               description: Hugging Face Hub search (models, datasets, spaces, papers)
+            # Gmail, Calendar and Drive, served by one workspace-mcp pod.
+            google_workspace:
+              url: http://mcp-google-workspace.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Gmail, Google Calendar and Google Drive
             # morningstar (remote-hosted, NOT enabled): needs an API key, and
             # no container image exists (see README). To enable, create the
             # Secret out of band, then add `environmentSecrets:
