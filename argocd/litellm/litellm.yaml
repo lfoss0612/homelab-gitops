@@ -77,8 +77,7 @@ spec:
         #   kubectl -n litellm create secret generic litellm-github-mcp \
         #     --from-literal=token=<GitHub PAT>
         # Home Assistant long-lived access token (same pattern), Secret
-        # litellm-hass-mcp, key `token`. Same for litellm-postman-mcp (Postman API key)
-        # and litellm-morningstar-mcp (Morningstar key).
+        # litellm-hass-mcp, key `token`. Same for litellm-postman-mcp (Postman API key).
         # optional: true so a missing Secret leaves GitHub unauthenticated
         # instead of stopping the litellm pod.
         extraEnvVars:
@@ -98,12 +97,6 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: litellm-postman-mcp
-                key: token
-                optional: true
-          - name: MORNINGSTAR_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: litellm-morningstar-mcp
                 key: token
                 optional: true
         # MCP gateway registrations. The in-cluster servers are the Services
@@ -203,15 +196,6 @@ spec:
               auth_type: bearer_token
               auth_value: os.environ/POSTMAN_API_KEY
               description: Postman workspaces, collections and APIs (hosted)
-            # Morningstar remote server. The URL comes from the vault tracker and
-            # is NOT verified (the endpoint was unreachable from the build
-            # session); the key is read from env MORNINGSTAR_API_KEY.
-            morningstar:
-              url: https://mcp.morningstar.com/mcp
-              transport: http
-              auth_type: bearer_token
-              auth_value: os.environ/MORNINGSTAR_API_KEY
-              description: Morningstar investment data (remote)
         resources:
           requests:
             memory: 1536Mi
