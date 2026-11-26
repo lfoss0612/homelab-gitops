@@ -11,10 +11,6 @@ image:
 
 containerPort: 8000
 
-# Create this Secret out-of-band before syncing, e.g.:
-#   kubectl -n mcp create secret generic google-workspace-mcp-env \
-#     --from-literal=GOOGLE_OAUTH_CLIENT_ID=... \
-#     --from-literal=GOOGLE_OAUTH_CLIENT_SECRET=...
 # Credential store location (inside the PVC mount).
 env:
   - name: WORKSPACE_MCP_CREDENTIALS_DIR
@@ -26,6 +22,10 @@ persistence:
   size: 100Mi
   storageClass: longhorn
 
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic google-workspace-mcp-env \
+#     --from-literal=GOOGLE_OAUTH_CLIENT_ID=... \
+#     --from-literal=GOOGLE_OAUTH_CLIENT_SECRET=...
 envFromSecrets:
   - google-workspace-mcp-env
 
