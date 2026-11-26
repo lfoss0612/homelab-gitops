@@ -76,6 +76,8 @@ spec:
         # visible here). Create out of band:
         #   kubectl -n litellm create secret generic litellm-github-mcp \
         #     --from-literal=token=<GitHub PAT>
+        # Home Assistant long-lived access token (same pattern), Secret
+        # litellm-hass-mcp, key `token`.
         # optional: true so a missing Secret leaves GitHub unauthenticated
         # instead of stopping the litellm pod.
         extraEnvVars:
@@ -83,6 +85,12 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: litellm-github-mcp
+                key: token
+                optional: true
+          - name: HASS_MCP_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: litellm-hass-mcp
                 key: token
                 optional: true
         # MCP gateway registrations. The in-cluster servers are the Services
@@ -120,6 +128,22 @@ spec:
               url: http://mcp-grafana.mcp.svc.cluster.local:80/mcp
               transport: http
               description: Grafana dashboards and datasource queries
+            # OPNsense (read-only by default), argocd/apps/mcp-opnsense.yaml.
+            opnsense:
+              url: http://mcp-opnsense.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: OPNsense firewall inventory and status (read-only)
+            # Home Assistant's built-in MCP Server integration (no pod). This is
+            # the Device control URL: only entities exposed to voice assistants,
+            # no administrator account needed. For every tool set use
+            # /api/mcp, which requires an administrator account's token.
+            # Reachability from the cluster to VLAN 10 is not verified.
+            homeassistant:
+              url: http://10.1.5.10:8123/api/mcp/assist
+              transport: http
+              auth_type: bearer_token
+              auth_value: os.environ/HASS_MCP_TOKEN
+              description: Home Assistant device control (exposed entities)
             # Official kubernetes-mcp-server (read/write), argocd/apps/mcp-kubernetes.yaml.
             kubernetes:
               url: http://mcp-k8s.mcp.svc.cluster.local:8080/mcp
