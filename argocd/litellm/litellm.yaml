@@ -184,10 +184,6 @@ spec:
               url: http://mcp-paypal.mcp.svc.cluster.local:80/mcp
               transport: http
               description: PayPal payments and invoicing
-            monday:
-              url: http://mcp-monday.mcp.svc.cluster.local:80/mcp
-              transport: http
-              description: monday.com boards and items
             # @nazruden/clickup-server (MIT, free), wrapped via supergateway -
             # not the official hosted mcp.clickup.com endpoint, which is
             # OAuth-only and doesn't fit this config's static-bearer-token
