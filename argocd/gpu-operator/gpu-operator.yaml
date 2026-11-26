@@ -32,4 +32,4 @@ spec:
         # fought the hand-written one we used to keep in
         # argocd/cattle-monitoring-system/dcgm-exporter-servicemonitor.yaml (removed).
     repoURL: https://helm.ngc.nvidia.com/nvidia
-    targetRevision: v26.7.2
+    targetRevision: v26.7.3

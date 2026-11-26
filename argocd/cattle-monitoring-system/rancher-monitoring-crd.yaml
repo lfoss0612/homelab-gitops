@@ -19,4 +19,4 @@ spec:
     # repo rancher-monitoring already uses; dry-run showed identical CRD content.
     chart: rancher-monitoring-crd
     repoURL: https://charts.rancher.io
-    targetRevision: 110.0.2+up80.9.1-rancher.22
+    targetRevision: 110.0.3+up80.9.1-rancher.24

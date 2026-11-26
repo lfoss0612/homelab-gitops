@@ -127,7 +127,7 @@ spec:
     # is the `openwebui` database on Yugabyte (DATABASE_URL from the open-webui-db
     # secret), which the app migrates forward on first start, one-way: a logical
     # ysql_dump and Longhorn backups were taken first (schema was 42e2978c7933).
-    targetRevision: 18.3.0
+    targetRevision: 18.5.0
   syncPolicy:
     automated:
       prune: true
