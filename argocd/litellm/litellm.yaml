@@ -102,6 +102,24 @@ spec:
               auth_type: bearer_token
               auth_value: os.environ/GITHUB_MCP_TOKEN
               description: GitHub repos, issues, pull requests and Actions (hosted)
+            # Web search via in-cluster SearXNG (argocd/searxng + mcp-searxng).
+            searxng:
+              url: http://mcp-searxng.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Private web search (SearXNG)
+            # Up-to-date library documentation. Hosted by Context7; works
+            # without a key at a lower rate limit. For a key, add
+            # auth_type: bearer_token + auth_value: os.environ/CONTEXT7_API_KEY.
+            context7:
+              url: https://mcp.context7.com/mcp
+              transport: http
+              description: Up-to-date library and framework documentation (hosted)
+            # Grafana (dashboards, Prometheus and Loki queries), existing pod
+            # argocd/apps/mcp-grafana.yaml. Loki tools need a Loki datasource.
+            grafana:
+              url: http://mcp-grafana.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Grafana dashboards and datasource queries
             # Official kubernetes-mcp-server (read/write), argocd/apps/mcp-kubernetes.yaml.
             kubernetes:
               url: http://mcp-k8s.mcp.svc.cluster.local:8080/mcp

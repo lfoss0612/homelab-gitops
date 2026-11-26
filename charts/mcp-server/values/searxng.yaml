@@ -1,0 +1,25 @@
+# searxng MCP server
+# ihor-sokoliuk/mcp-searxng: web search through the in-cluster SearXNG
+# (argocd/searxng). Streamable HTTP on :8080 at /mcp (MCP_HTTP_PORT enables it).
+
+image:
+  repository: isokoliuk/mcp-searxng
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+env:
+  - name: SEARXNG_URL
+    value: http://searxng.searxng.svc.cluster.local:8080
+  - name: MCP_HTTP_PORT
+    value: "8080"
+  - name: MCP_HTTP_HOST
+    value: 0.0.0.0
+
+ingress:
+  enabled: false
+  className: nginx
+  host: searxng.mcp.homelab.local
+  tls:
+    enabled: false
