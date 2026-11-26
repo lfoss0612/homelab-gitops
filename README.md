@@ -98,6 +98,7 @@ in `CreateContainerConfigError` until the Secret exists). The exact
 
 All image references were verified to exist in their registries (2026-07).
 `morningstar` was removed: no container image or npm package exists.
+`postman` was removed: the stdio-only pod was unreachable; LiteLLM uses Postman's hosted MCP server instead.
 
 ### HTTP-native (Service enabled; Ingress available, disabled by default)
 
@@ -122,7 +123,6 @@ All image references were verified to exist in their registries (2026-07).
 | sequentialthinking | `mcp/sequentialthinking` | — |
 | git | `mcp/git` | — |
 | obsidian | `mcp/obsidian` | `OBSIDIAN_API_KEY`, `OBSIDIAN_HOST` |
-| postman | `mcp/postman` | `POSTMAN_API_KEY` |
 | python-refactoring | `mcp/mcp-python-refactoring` | — |
 | code-interpreter | `mcp/mcp-code-interpreter` | — |
 | google-maps | `mcp/google-maps` | `GOOGLE_MAPS_API_KEY` |
