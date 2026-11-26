@@ -16,6 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         server: [paypal, monday, argocd, google-workspace, opnsense, fetch]
     steps:
