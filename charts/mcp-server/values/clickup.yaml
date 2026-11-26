@@ -1,0 +1,27 @@
+# clickup MCP server
+# npm wrapper image (dockerfiles/clickup) bridging @nazruden/clickup-server
+# to streamable HTTP via supergateway.
+
+image:
+  repository: ghcr.io/lfoss0612/mcp-clickup
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic clickup-mcp-env \
+#     --from-literal=CLICKUP_PERSONAL_TOKEN=...
+envFromSecrets:
+  - clickup-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: clickup.mcp.homelab.local
+  tls:
+    enabled: false
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

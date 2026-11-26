@@ -188,6 +188,15 @@ spec:
               url: http://mcp-monday.mcp.svc.cluster.local:80/mcp
               transport: http
               description: monday.com boards and items
+            # @nazruden/clickup-server (MIT, free), wrapped via supergateway -
+            # not the official hosted mcp.clickup.com endpoint, which is
+            # OAuth-only and doesn't fit this config's static-bearer-token
+            # model; not the @taazkareem package either, which went
+            # proprietary/paid. Auth is a plain ClickUp personal API token.
+            clickup:
+              url: http://mcp-clickup.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: ClickUp tasks, spaces, lists, docs and more
             # Postman's hosted MCP server (the old stdio pod has no Service, so
             # LiteLLM can't reach it). API-key auth via Bearer, key from env
             # POSTMAN_API_KEY (see extraEnvVars). /mcp is Full mode; use /minimal
