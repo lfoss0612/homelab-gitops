@@ -151,16 +151,15 @@ spec:
               url: http://mcp-opnsense.mcp.svc.cluster.local:80/mcp
               transport: http
               description: OPNsense firewall inventory and status (read-only)
-            # Home Assistant's built-in MCP Server integration (no pod). This is
-            # the Device control URL: only entities exposed to voice assistants,
-            # no administrator account needed. For every tool set use
-            # /api/mcp, which requires an administrator account's token.
+            # Home Assistant's built-in MCP Server integration (no pod).
             # HAOS is on the "VM" OPNsense interface (10.10.5.0/24), confirmed
             # live from its own network settings - NOT 10.1.5.10/VLAN 10 as a
-            # prior note assumed. Still needs the OPNsense K8s->HAOS firewall
-            # rule/alias repointed at 10.10.5.3 to actually reach it.
+            # prior note assumed. /api/mcp is the real streamable-HTTP MCP
+            # endpoint, confirmed with a live initialize handshake (server
+            # identifies as "home-assistant"); the old /api/mcp/assist and
+            # /mcp/assist paths both 404 - that split never existed.
             homeassistant:
-              url: http://10.10.5.3:8123/api/mcp/assist
+              url: http://10.10.5.3:8123/api/mcp
               transport: http
               auth_type: bearer_token
               auth_value: os.environ/HASS_MCP_TOKEN
