@@ -12,6 +12,8 @@ Tiers say the order to upgrade in and how much ceremony to use:
    data afterwards
 4. last: upgrade everything else first, export first, and expect the UI to blip
 
+`-` means the app's version is set by another component and is not reported as "behind" (rancher-webhook follows Rancher); it moves in the same change as that component.
+
 | App | Tier | Care |
 |---|---|---|
 | `pgadmin` | 1 | `*` target revision: the live version is the one Argo resolved; pin it when bumping |
@@ -23,7 +25,7 @@ Tiers say the order to upgrade in and how much ceremony to use:
 | `open-webui` | 2 | Ollama model volume is huge: never part of a backup; check the GPU is still seen |
 | `rancher-monitoring` | 2 | Bump together with `rancher-monitoring-crd`; large CRDs need `ServerSideApply` |
 | `rancher-monitoring-crd` | 2 | Bump together with `rancher-monitoring` |
-| `rancher-webhook` | 2 | Rancher manages this chart itself on 2.15+; check ownership before changing it |
+| `rancher-webhook` | - | follows Rancher: its version is set by the Rancher release, so bump `targetRevision` in `argocd/cattle-system/rancher-webhook.yaml` together with the Rancher upgrade, never on its own |
 | `system-upgrade-controller` | 2 | Rancher 2.15 took over this chart; the plan must not drain (Longhorn PDB hangs) |
 | `gpu-operator` | 3 | After a driver or kernel change run `nvidia-smi` and check the operator pods and Ollama |
 | `rancher` | 3 | Read the notes for removed ServiceAccounts and bundled charts it takes over; watch the per-node pod limit for a burst of helm-operation pods |

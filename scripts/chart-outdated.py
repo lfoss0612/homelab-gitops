@@ -61,9 +61,10 @@ def risk_table():
     table = {}
     try:
         for line in open(RISK_TABLE, encoding="utf-8"):
-            m = re.match(r"\|\s*`([^`]+)`\s*\|\s*([1-4])\s*\|\s*(.*?)\s*\|\s*$", line)
+            m = re.match(r"\|\s*`([^`]+)`\s*\|\s*([1-4]|-)\s*\|\s*(.*?)\s*\|\s*$", line)
             if m:
-                table[m.group(1)] = (int(m.group(2)), m.group(3))
+                # tier "-" = pinned to another component (version follows it): not reported as behind
+                table[m.group(1)] = (0 if m.group(2) == "-" else int(m.group(2)), m.group(3))
     except OSError:
         pass
     return table
@@ -120,7 +121,7 @@ def main():
                HELM_CONFIG_HOME=f"{tmp}/config", HELM_CACHE_HOME=f"{tmp}/hcache")
     helm_env = {"env": env, "added": set()}
     aliases = {}
-    rows, local = [], []
+    rows, local, follows = [], [], []
 
     for a in apps:
         name = a["metadata"]["name"]
@@ -142,13 +143,16 @@ def main():
             rows.append({"app": name, "chart": chart, "current": cur, "latest": None, "jump": f"error: {e}", "tier": 2, "note": "", "home": ""})
             continue
         tier, note = risks.get(name, (2, "NOT IN docs/app-upgrade-risks.md - add a row"))
+        if tier == 0:
+            follows.append(f"{name} ({note})")
+            continue
         j = jump(cur, new) if (new and cur) else "unknown"
         rows.append({"app": name, "chart": chart, "current": cur, "latest": new, "app_version": appv, "jump": j, "tier": tier, "note": note, "home": home})
 
     rows.sort(key=lambda r: (r["tier"], r["app"]))
     shown = [r for r in rows if args.all or r["jump"] not in ("current",)]
     if args.json:
-        print(json.dumps({"apps": shown, "local_charts": local}, indent=2))
+        print(json.dumps({"apps": shown, "local_charts": local, "follows_another_component": follows}, indent=2))
         return
     print(f"{'TIER':<5}{'APP':<28}{'CURRENT':<30}{'LATEST':<30}{'JUMP':<8}NOTE")
     for r in shown:
@@ -158,6 +162,8 @@ def main():
             print(f"{'':<5}{'':<28}{r['home']}")
     behind = sum(1 for r in rows if r["jump"] in ("patch", "minor", "MAJOR"))
     print(f"\n{behind} of {len(rows)} Helm apps behind. Charts kept in this repo (not checked): {', '.join(local) or 'none'}.")
+    if follows:
+        print(f"Not reported (version follows another component): {'; '.join(follows)}.")
 
 
 if __name__ == "__main__":
