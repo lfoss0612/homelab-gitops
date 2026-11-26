@@ -77,7 +77,8 @@ spec:
         #   kubectl -n litellm create secret generic litellm-github-mcp \
         #     --from-literal=token=<GitHub PAT>
         # Home Assistant long-lived access token (same pattern), Secret
-        # litellm-hass-mcp, key `token`.
+        # litellm-hass-mcp, key `token`. Same for litellm-postman-mcp (Postman API key)
+        # and litellm-morningstar-mcp (Morningstar key).
         # optional: true so a missing Secret leaves GitHub unauthenticated
         # instead of stopping the litellm pod.
         extraEnvVars:
@@ -91,6 +92,18 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: litellm-hass-mcp
+                key: token
+                optional: true
+          - name: POSTMAN_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: litellm-postman-mcp
+                key: token
+                optional: true
+          - name: MORNINGSTAR_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: litellm-morningstar-mcp
                 key: token
                 optional: true
         # MCP gateway registrations. The in-cluster servers are the Services
@@ -159,16 +172,39 @@ spec:
               url: http://mcp-google-workspace.mcp.svc.cluster.local:80/mcp
               transport: http
               description: Gmail, Google Calendar and Google Drive
-            # morningstar (remote-hosted, NOT enabled): needs an API key, and
-            # no container image exists (see README). To enable, create the
-            # Secret out of band, then add `environmentSecrets:
-            # [morningstar-mcp-env]` to this valuesObject (a missing Secret
-            # would stop the litellm pod from starting) and uncomment:
-            #   morningstar:
-            #     url: https://mcp.morningstar.com/mcp
-            #     transport: http
-            #     auth_type: bearer_token
-            #     auth_value: os.environ/MORNINGSTAR_API_KEY
+            # In-cluster wrapper pods (argocd/apps/mcp-<name>.yaml). Each pod
+            # holds its own credentials in its <name>-mcp-env Secret.
+            argocd:
+              url: http://mcp-argocd.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Argo CD applications and sync status
+            paypal:
+              url: http://mcp-paypal.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: PayPal payments and invoicing
+            monday:
+              url: http://mcp-monday.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: monday.com boards and items
+            # Postman's hosted MCP server (the old stdio pod has no Service, so
+            # LiteLLM can't reach it). API-key auth via Bearer, key from env
+            # POSTMAN_API_KEY (see extraEnvVars). /mcp is Full mode; use /minimal
+            # or /code for smaller tool sets.
+            postman:
+              url: https://mcp.postman.com/mcp
+              transport: http
+              auth_type: bearer_token
+              auth_value: os.environ/POSTMAN_API_KEY
+              description: Postman workspaces, collections and APIs (hosted)
+            # Morningstar remote server. The URL comes from the vault tracker and
+            # is NOT verified (the endpoint was unreachable from the build
+            # session); the key is read from env MORNINGSTAR_API_KEY.
+            morningstar:
+              url: https://mcp.morningstar.com/mcp
+              transport: http
+              auth_type: bearer_token
+              auth_value: os.environ/MORNINGSTAR_API_KEY
+              description: Morningstar investment data (remote)
         resources:
           requests:
             memory: 1536Mi
