@@ -81,4 +81,4 @@ spec:
     # annotation (they exceed the client-side apply limit). A full export of the
     # argocd namespace (secrets, configmaps, Applications, Projects, RBAC) was taken
     # first; rollback = `kubectl apply --server-side` of the saved 9.5.19 manifest.
-    targetRevision: 10.18.0
+    targetRevision: 10.20.0
