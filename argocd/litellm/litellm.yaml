@@ -71,6 +71,25 @@ spec:
       # Request set just above observed usage, limit with headroom for
       # request-routing/caching spikes.
       valuesObject:
+        # MCP gateway registrations. The in-cluster servers are the Services
+        # created by argocd/apps/mcp-<name>.yaml (charts/mcp-server) in the
+        # `mcp` namespace; service port is the chart default (80).
+        proxy_config:
+          mcp_servers:
+            huggingface:
+              url: http://mcp-huggingface.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Hugging Face Hub search (models, datasets, spaces, papers)
+            # morningstar (remote-hosted, NOT enabled): needs an API key, and
+            # no container image exists (see README). To enable, create the
+            # Secret out of band, then add `environmentSecrets:
+            # [morningstar-mcp-env]` to this valuesObject (a missing Secret
+            # would stop the litellm pod from starting) and uncomment:
+            #   morningstar:
+            #     url: https://mcp.morningstar.com/mcp
+            #     transport: http
+            #     auth_type: bearer_token
+            #     auth_value: os.environ/MORNINGSTAR_API_KEY
         resources:
           requests:
             memory: 1536Mi
