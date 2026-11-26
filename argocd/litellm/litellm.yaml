@@ -71,6 +71,140 @@ spec:
       # Request set just above observed usage, limit with headroom for
       # request-routing/caching spikes.
       valuesObject:
+        # PAT for the hosted GitHub MCP server. The Secret lives in the litellm
+        # namespace (Secrets are namespaced; github-mcp-env in `mcp` is not
+        # visible here). Create out of band:
+        #   kubectl -n litellm create secret generic litellm-github-mcp \
+        #     --from-literal=token=<GitHub PAT>
+        # Home Assistant long-lived access token (same pattern), Secret
+        # litellm-hass-mcp, key `token`. Same for litellm-postman-mcp (Postman API key)
+        # and litellm-morningstar-mcp (Morningstar key).
+        # optional: true so a missing Secret leaves GitHub unauthenticated
+        # instead of stopping the litellm pod.
+        extraEnvVars:
+          - name: GITHUB_MCP_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: litellm-github-mcp
+                key: token
+                optional: true
+          - name: HASS_MCP_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: litellm-hass-mcp
+                key: token
+                optional: true
+          - name: POSTMAN_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: litellm-postman-mcp
+                key: token
+                optional: true
+          - name: MORNINGSTAR_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: litellm-morningstar-mcp
+                key: token
+                optional: true
+        # MCP gateway registrations. The in-cluster servers are the Services
+        # created by argocd/apps/mcp-<name>.yaml (charts/mcp-server) in the
+        # `mcp` namespace; service port is the chart default (80).
+        proxy_config:
+          mcp_servers:
+            huggingface:
+              url: http://mcp-huggingface.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Hugging Face Hub search (models, datasets, spaces, papers)
+            # GitHub's hosted MCP server (no pod). Auth is a GitHub PAT sent as a
+            # bearer token, read from env GITHUB_MCP_TOKEN (see extraEnvVars).
+            github:
+              url: https://api.githubcopilot.com/mcp/
+              transport: http
+              auth_type: bearer_token
+              auth_value: os.environ/GITHUB_MCP_TOKEN
+              description: GitHub repos, issues, pull requests and Actions (hosted)
+            # Web search via in-cluster SearXNG (argocd/searxng + mcp-searxng).
+            searxng:
+              url: http://mcp-searxng.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Private web search (SearXNG)
+            # Up-to-date library documentation. Hosted by Context7; works
+            # without a key at a lower rate limit. For a key, add
+            # auth_type: bearer_token + auth_value: os.environ/CONTEXT7_API_KEY.
+            context7:
+              url: https://mcp.context7.com/mcp
+              transport: http
+              description: Up-to-date library and framework documentation (hosted)
+            # Grafana (dashboards, Prometheus and Loki queries), existing pod
+            # argocd/apps/mcp-grafana.yaml. Loki tools need a Loki datasource.
+            grafana:
+              url: http://mcp-grafana.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Grafana dashboards and datasource queries
+            # Web page fetch (official mcp-server-fetch), argocd/apps/mcp-fetch.yaml.
+            fetch:
+              url: http://mcp-fetch.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Fetch web pages as markdown (public addresses only)
+            # OPNsense (read-only by default), argocd/apps/mcp-opnsense.yaml.
+            opnsense:
+              url: http://mcp-opnsense.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: OPNsense firewall inventory and status (read-only)
+            # Home Assistant's built-in MCP Server integration (no pod). This is
+            # the Device control URL: only entities exposed to voice assistants,
+            # no administrator account needed. For every tool set use
+            # /api/mcp, which requires an administrator account's token.
+            # Reachability from the cluster to VLAN 10 is not verified.
+            homeassistant:
+              url: http://10.1.5.10:8123/api/mcp/assist
+              transport: http
+              auth_type: bearer_token
+              auth_value: os.environ/HASS_MCP_TOKEN
+              description: Home Assistant device control (exposed entities)
+            # Official kubernetes-mcp-server (read/write), argocd/apps/mcp-kubernetes.yaml.
+            kubernetes:
+              url: http://mcp-k8s.mcp.svc.cluster.local:8080/mcp
+              transport: http
+              description: Read/write Kubernetes cluster access (pods, logs, events, Helm releases)
+            # Gmail, Calendar and Drive, served by one workspace-mcp pod.
+            google_workspace:
+              url: http://mcp-google-workspace.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Gmail, Google Calendar and Google Drive
+            # In-cluster wrapper pods (argocd/apps/mcp-<name>.yaml). Each pod
+            # holds its own credentials in its <name>-mcp-env Secret.
+            argocd:
+              url: http://mcp-argocd.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Argo CD applications and sync status
+            paypal:
+              url: http://mcp-paypal.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: PayPal payments and invoicing
+            monday:
+              url: http://mcp-monday.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: monday.com boards and items
+            # Postman's hosted MCP server (the old stdio pod has no Service, so
+            # LiteLLM can't reach it). API-key auth via Bearer, key from env
+            # POSTMAN_API_KEY (see extraEnvVars). /mcp is Full mode; use /minimal
+            # or /code for smaller tool sets.
+            postman:
+              url: https://mcp.postman.com/mcp
+              transport: http
+              auth_type: bearer_token
+              auth_value: os.environ/POSTMAN_API_KEY
+              description: Postman workspaces, collections and APIs (hosted)
+            # Morningstar remote server. The URL comes from the vault tracker and
+            # is NOT verified (the endpoint was unreachable from the build
+            # session); the key is read from env MORNINGSTAR_API_KEY.
+            morningstar:
+              url: https://mcp.morningstar.com/mcp
+              transport: http
+              auth_type: bearer_token
+              auth_value: os.environ/MORNINGSTAR_API_KEY
+              description: Morningstar investment data (remote)
         resources:
           requests:
             memory: 1536Mi

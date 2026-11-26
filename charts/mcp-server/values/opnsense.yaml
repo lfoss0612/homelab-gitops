@@ -1,0 +1,31 @@
+# opnsense MCP server
+# Wrapper image (dockerfiles/opnsense): opnsense-mcp-server bridged to
+# streamable HTTP via supergateway. READ-ONLY by default; to allow changes add
+# OPNSENSE_ALLOW_WRITES=true to the Secret (and use a least-privilege API user).
+
+image:
+  repository: ghcr.io/lfoss0612/mcp-opnsense
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic opnsense-mcp-env \
+#     --from-literal=OPNSENSE_URL=https://opnsense.home.lan/api \
+#     --from-literal=OPNSENSE_API_KEY=... \
+#     --from-literal=OPNSENSE_API_SECRET=... \
+#     --from-literal=OPNSENSE_VERIFY_SSL=false
+envFromSecrets:
+  - opnsense-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: opnsense.mcp.homelab.local
+  tls:
+    enabled: false
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

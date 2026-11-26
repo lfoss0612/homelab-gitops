@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        server: [paypal, monday, argocd]
+        server: [paypal, monday, argocd, google-workspace, opnsense, fetch]
     steps:
       - uses: actions/checkout@v4
 

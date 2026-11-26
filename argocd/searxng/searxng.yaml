@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: searxng
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # Community chart (kubitodev, verified publisher on Artifact Hub). Defaults
+    # already enable the JSON output format the MCP server needs, and expose
+    # Service searxng:8080 (ClusterIP).
+    repoURL: https://charts.kubito.dev
+    chart: searxng
+    targetRevision: 1.1.4
+    helm:
+      releaseName: searxng
+      valuesObject:
+        ingress:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: searxng
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

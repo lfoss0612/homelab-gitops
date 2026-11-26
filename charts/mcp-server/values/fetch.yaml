@@ -1,0 +1,22 @@
+# fetch MCP server
+# Official mcp-server-fetch wrapped for streamable HTTP via supergateway
+# (dockerfiles/fetch). Fetches web pages as markdown; private/LAN addresses are
+# refused by the server's built-in guard. No credentials needed.
+
+image:
+  repository: ghcr.io/lfoss0612/mcp-fetch
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+ingress:
+  enabled: false
+  className: nginx
+  host: fetch.mcp.homelab.local
+  tls:
+    enabled: false
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

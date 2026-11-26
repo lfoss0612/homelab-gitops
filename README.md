@@ -98,6 +98,7 @@ in `CreateContainerConfigError` until the Secret exists). The exact
 
 All image references were verified to exist in their registries (2026-07).
 `morningstar` was removed: no container image or npm package exists.
+`postman` was removed: the stdio-only pod was unreachable; LiteLLM uses Postman's hosted MCP server instead.
 
 ### HTTP-native (Service enabled; Ingress available, disabled by default)
 
@@ -106,6 +107,7 @@ All image references were verified to exist in their registries (2026-07).
 | grafana | `mcp/grafana` | 8000 | `GRAFANA_URL`, `GRAFANA_SERVICE_ACCOUNT_TOKEN` |
 | playwright | `mcr.microsoft.com/playwright/mcp` | 8080 | — |
 | huggingface | `ghcr.io/evalstate/hf-mcp-server` | 3000 | `HF_TOKEN` |
+| kubernetes | official Helm chart `oci://ghcr.io/containers/charts/kubernetes-mcp-server` 0.1.3 (read/write, `edit` ClusterRole) | 8080 | — |
 | linkedin | `stickerdaniel/linkedin-mcp-server:1.4.0` | 8000 | `LINKEDIN_COOKIE` |
 | prometheus | `ghcr.io/pab1it0/prometheus-mcp-server` | 8080 | — (URL set via plain env) |
 | paypal | `ghcr.io/lfoss0612/mcp-paypal` (wrapper) | 8080 | `PAYPAL_ACCESS_TOKEN`, `PAYPAL_ENVIRONMENT` |
@@ -121,8 +123,6 @@ All image references were verified to exist in their registries (2026-07).
 | sequentialthinking | `mcp/sequentialthinking` | — |
 | git | `mcp/git` | — |
 | obsidian | `mcp/obsidian` | `OBSIDIAN_API_KEY`, `OBSIDIAN_HOST` |
-| kubernetes | `mcp/kubernetes` | — (uses service account; grant RBAC separately) |
-| postman | `mcp/postman` | `POSTMAN_API_KEY` |
 | python-refactoring | `mcp/mcp-python-refactoring` | — |
 | code-interpreter | `mcp/mcp-code-interpreter` | — |
 | google-maps | `mcp/google-maps` | `GOOGLE_MAPS_API_KEY` |

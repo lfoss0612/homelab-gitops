@@ -10,13 +10,36 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/lfoss0612/homelab-gitops.git
-    targetRevision: HEAD
-    path: charts/mcp-server
+    # Official containers/kubernetes-mcp-server Helm chart (OCI), HTTP mode.
+    # Replaces the old stdio-only mcp/kubernetes pod (charts/mcp-server).
+    repoURL: ghcr.io/containers/charts
+    chart: kubernetes-mcp-server
+    targetRevision: 0.1.3
     helm:
       releaseName: mcp-kubernetes
-      valueFiles:
-        - values/kubernetes.yaml
+      valuesObject:
+        # Distinct from the old `mcp-kubernetes` Deployment/Service so the
+        # switch doesn't collide on immutable selectors.
+        fullnameOverride: mcp-k8s
+        # ClusterIP only: LiteLLM reaches it in-cluster
+        # (http://mcp-k8s.mcp.svc.cluster.local:8080/mcp).
+        ingress:
+          enabled: false
+        config:
+          port: "8080"
+          # Read/write: the server may create, update and delete resources.
+          read_only: false
+          disable_destructive: false
+        rbac:
+          # Bind the chart's ServiceAccount to the built-in `edit` ClusterRole
+          # (read/write on most namespaced resources, incl. reading Secrets;
+          # no RBAC changes, no nodes/namespaces/CRD writes). For read-only,
+          # bind `view` instead and set read_only/disable_destructive to true.
+          extraClusterRoleBindings:
+            - name: edit
+              roleRef:
+                name: edit
+                external: true
   destination:
     server: https://kubernetes.default.svc
     namespace: mcp

@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: mcp-postman
+  name: mcp-fetch
   namespace: argocd
   labels:
     app.kubernetes.io/part-of: mcp-servers
@@ -14,9 +14,9 @@ spec:
     targetRevision: HEAD
     path: charts/mcp-server
     helm:
-      releaseName: mcp-postman
+      releaseName: mcp-fetch
       valueFiles:
-        - values/postman.yaml
+        - values/fetch.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: mcp
