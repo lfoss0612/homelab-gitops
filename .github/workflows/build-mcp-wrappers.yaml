@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        server: [paypal, monday, argocd, google-workspace, opnsense, fetch]
+        server: [paypal, monday, argocd, google-workspace, opnsense, fetch, clickup]
     steps:
       - uses: actions/checkout@v4
 
