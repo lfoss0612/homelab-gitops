@@ -155,9 +155,12 @@ spec:
             # the Device control URL: only entities exposed to voice assistants,
             # no administrator account needed. For every tool set use
             # /api/mcp, which requires an administrator account's token.
-            # Reachability from the cluster to VLAN 10 is not verified.
+            # HAOS is on the "VM" OPNsense interface (10.10.5.0/24), confirmed
+            # live from its own network settings - NOT 10.1.5.10/VLAN 10 as a
+            # prior note assumed. Still needs the OPNsense K8s->HAOS firewall
+            # rule/alias repointed at 10.10.5.3 to actually reach it.
             homeassistant:
-              url: http://10.1.5.10:8123/api/mcp/assist
+              url: http://10.10.5.3:8123/api/mcp/assist
               transport: http
               auth_type: bearer_token
               auth_value: os.environ/HASS_MCP_TOKEN
