@@ -32,7 +32,7 @@ charts/mcp-server/         # reusable single-server Helm chart
   values/<name>.yaml       # per-server overrides (image, port, secrets, ingress)
   templates/               # Deployment, Service, Ingress, Secret, ServiceAccount
 dockerfiles/
-  paypal/  monday/  argocd/   # pinned wrapper Dockerfiles for npm-only servers
+  paypal/  clickup/  argocd/   # pinned wrapper Dockerfiles for npm-only servers
   Dockerfile.npm-wrapper      # generic wrapper for experimenting with new servers
 .github/workflows/
   build-mcp-wrappers.yaml     # builds & pushes wrapper images to ghcr.io
@@ -111,7 +111,7 @@ All image references were verified to exist in their registries (2026-07).
 | linkedin | `stickerdaniel/linkedin-mcp-server:1.4.0` | 8000 | `LINKEDIN_COOKIE` |
 | prometheus | `ghcr.io/pab1it0/prometheus-mcp-server` | 8080 | — (URL set via plain env) |
 | paypal | `ghcr.io/lfoss0612/mcp-paypal` (wrapper) | 8080 | `PAYPAL_ACCESS_TOKEN`, `PAYPAL_ENVIRONMENT` |
-| monday | `ghcr.io/lfoss0612/mcp-monday` (wrapper) | 8080 | `MONDAY_TOKEN` |
+| clickup | `ghcr.io/lfoss0612/mcp-clickup` (wrapper) | 8080 | `CLICKUP_PERSONAL_TOKEN` |
 | argocd | `ghcr.io/lfoss0612/mcp-argocd` (wrapper) | 8080 | `ARGOCD_BASE_URL`, `ARGOCD_API_TOKEN` |
 
 ### stdio-only (no Service; kept alive with stdin/tty)
@@ -136,7 +136,7 @@ wrappers in `dockerfiles/` do.
 
 ## Wrapper images (npm-only servers)
 
-PayPal, monday.com, and Argo CD ship as npm packages, not container images.
+PayPal, ClickUp, and Argo CD ship as npm packages, not container images.
 `dockerfiles/<name>/Dockerfile` pins each package and bridges its stdio
 transport to streamable HTTP (port 8080, health endpoint `/healthz`) via
 supergateway. The GitHub Actions workflow builds and pushes them to
