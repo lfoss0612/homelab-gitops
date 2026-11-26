@@ -80,11 +80,11 @@ spec:
               url: http://mcp-huggingface.mcp.svc.cluster.local:80/mcp
               transport: http
               description: Hugging Face Hub search (models, datasets, spaces, papers)
-            # Official kubernetes-mcp-server (read-only), argocd/apps/mcp-kubernetes.yaml.
+            # Official kubernetes-mcp-server (read/write), argocd/apps/mcp-kubernetes.yaml.
             kubernetes:
               url: http://mcp-k8s.mcp.svc.cluster.local:8080/mcp
               transport: http
-              description: Read-only Kubernetes cluster access (pods, logs, events, Helm releases)
+              description: Read/write Kubernetes cluster access (pods, logs, events, Helm releases)
             # Gmail, Calendar and Drive, served by one workspace-mcp pod.
             google_workspace:
               url: http://mcp-google-workspace.mcp.svc.cluster.local:80/mcp

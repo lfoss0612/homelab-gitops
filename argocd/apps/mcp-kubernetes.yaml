@@ -27,17 +27,18 @@ spec:
           enabled: false
         config:
           port: "8080"
-          # Defence in depth on top of the read-only RBAC below.
-          read_only: true
-          disable_destructive: true
+          # Read/write: the server may create, update and delete resources.
+          read_only: false
+          disable_destructive: false
         rbac:
-          # Bind the chart's ServiceAccount to the built-in read-only `view`
-          # ClusterRole (no Secrets, no writes). To allow changes later, bind
-          # `edit` here AND set read_only/disable_destructive to false.
+          # Bind the chart's ServiceAccount to the built-in `edit` ClusterRole
+          # (read/write on most namespaced resources, incl. reading Secrets;
+          # no RBAC changes, no nodes/namespaces/CRD writes). For read-only,
+          # bind `view` instead and set read_only/disable_destructive to true.
           extraClusterRoleBindings:
-            - name: view
+            - name: edit
               roleRef:
-                name: view
+                name: edit
                 external: true
   destination:
     server: https://kubernetes.default.svc

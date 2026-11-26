@@ -106,7 +106,7 @@ All image references were verified to exist in their registries (2026-07).
 | grafana | `mcp/grafana` | 8000 | `GRAFANA_URL`, `GRAFANA_SERVICE_ACCOUNT_TOKEN` |
 | playwright | `mcr.microsoft.com/playwright/mcp` | 8080 | — |
 | huggingface | `ghcr.io/evalstate/hf-mcp-server` | 3000 | `HF_TOKEN` |
-| kubernetes | official Helm chart `oci://ghcr.io/containers/charts/kubernetes-mcp-server` 0.1.3 (read-only, `view` ClusterRole) | 8080 | — |
+| kubernetes | official Helm chart `oci://ghcr.io/containers/charts/kubernetes-mcp-server` 0.1.3 (read/write, `edit` ClusterRole) | 8080 | — |
 | linkedin | `stickerdaniel/linkedin-mcp-server:1.4.0` | 8000 | `LINKEDIN_COOKIE` |
 | prometheus | `ghcr.io/pab1it0/prometheus-mcp-server` | 8080 | — (URL set via plain env) |
 | paypal | `ghcr.io/lfoss0612/mcp-paypal` (wrapper) | 8080 | `PAYPAL_ACCESS_TOKEN`, `PAYPAL_ENVIRONMENT` |
