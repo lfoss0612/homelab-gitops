@@ -19,7 +19,7 @@ Tiers say the order to upgrade in and how much ceremony to use:
 | `metal` | 2 | `*` target revision, as above. Check the IPAddressPool and L2Advertisement survive |
 | `cert-manager` | 2 | CRDs: confirm they are established before the sync finishes; check Certificates renew |
 | `langflow-ide` | 2 | Check the Postgres connection and the persistent volume after the sync |
-| `litellm` | 2 | OCI chart (ghcr.io); the Argo spec embeds credentials and is managed in the Argo UI, not git |
+| `litellm` | 2 | OCI chart (ghcr.io), pinned in `argocd/litellm/litellm.yaml`; the chart runs a DB migration job (one-way), and the model catalogue lives in its Postgres, so a Longhorn backup of `data-litellm-postgresql-0` comes first |
 | `open-webui` | 2 | Ollama model volume is huge: never part of a backup; check the GPU is still seen |
 | `rancher-monitoring` | 2 | Bump together with `rancher-monitoring-crd`; large CRDs need `ServerSideApply` |
 | `rancher-monitoring-crd` | 2 | Bump together with `rancher-monitoring` |

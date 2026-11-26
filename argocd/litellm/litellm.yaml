@@ -118,7 +118,7 @@ spec:
     # digest (see postgresql.image.* above). 1.109.1 chart == 1.109.1 app. Bump
     # deliberately: the chart's migrations Job runs one-way schema migrations, so
     # take a Longhorn backup of the postgres volume first.
-    targetRevision: 1.109.1
+    targetRevision: 1.110.4
   syncPolicy:
     automated:
       prune: true
