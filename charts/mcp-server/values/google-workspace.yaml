@@ -2,9 +2,7 @@
 # workspace-mcp wrapper image (dockerfiles/google-workspace): Gmail, Calendar
 # and Drive over native streamable HTTP on :8000 (/mcp).
 #
-# NOTE: OAuth tokens are stored on the container filesystem, so they are lost
-# when the pod restarts and the Google consent flow must be repeated. Add
-# persistent storage before relying on this unattended.
+# OAuth tokens are kept on a small Longhorn PVC so they survive restarts.
 
 image:
   repository: ghcr.io/lfoss0612/mcp-google-workspace
@@ -17,6 +15,17 @@ containerPort: 8000
 #   kubectl -n mcp create secret generic google-workspace-mcp-env \
 #     --from-literal=GOOGLE_OAUTH_CLIENT_ID=... \
 #     --from-literal=GOOGLE_OAUTH_CLIENT_SECRET=...
+# Credential store location (inside the PVC mount).
+env:
+  - name: WORKSPACE_MCP_CREDENTIALS_DIR
+    value: /home/mcp/.credentials
+
+persistence:
+  enabled: true
+  mountPath: /home/mcp/.credentials
+  size: 100Mi
+  storageClass: longhorn
+
 envFromSecrets:
   - google-workspace-mcp-env
 

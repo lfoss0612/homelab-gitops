@@ -71,6 +71,14 @@ resources:
   limits:
     memory: 512Mi
 
+# Optional persistent volume (single ReadWriteOnce PVC), for servers that keep
+# state such as OAuth tokens on disk.
+persistence:
+  enabled: false
+  mountPath: /data
+  size: 100Mi
+  storageClass: ""
+
 serviceAccount:
   create: false
   name: ""
