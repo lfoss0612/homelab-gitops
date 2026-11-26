@@ -128,6 +128,11 @@ spec:
               url: http://mcp-grafana.mcp.svc.cluster.local:80/mcp
               transport: http
               description: Grafana dashboards and datasource queries
+            # Web page fetch (official mcp-server-fetch), argocd/apps/mcp-fetch.yaml.
+            fetch:
+              url: http://mcp-fetch.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Fetch web pages as markdown (public addresses only)
             # OPNsense (read-only by default), argocd/apps/mcp-opnsense.yaml.
             opnsense:
               url: http://mcp-opnsense.mcp.svc.cluster.local:80/mcp
