@@ -9,7 +9,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-venv \
     && rm -rf /var/lib/apt/lists/* \
     && python3 -m venv /opt/venv \
-    && /opt/venv/bin/pip install --no-cache-dir mcp-server-fetch==2026.11.18 \
+    && /opt/venv/bin/pip install --no-cache-dir mcp-server-fetch==2026.11.11 \
     && npm install --global supergateway@3 \
     && npm cache clean --force
 
