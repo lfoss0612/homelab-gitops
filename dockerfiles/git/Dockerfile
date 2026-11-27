@@ -8,11 +8,14 @@
 # Upstream's uv-built venv at /app/.venv is not executable by this chart's
 # forced non-root uid 10001 as shipped ("permission denied" on
 # mcp-server-git) - fixed below. /app/.venv/bin/python is itself a symlink
-# to a real interpreter under /root/.local/share/uv/python/ (root-owned,
-# 0700), so chowning /app alone isn't enough: supergateway's child process
-# exec fails with EPIPE (the write to its already-dead stdin), confirmed
-# live via "permission denied" trying to exec mcp-server-git as uid 10001
-# and ls failing on every /root/.local/share/uv/... path component.
+# to a real interpreter under /root/.local/share/uv/python/, so chowning
+# /app alone isn't enough: supergateway's child process exec fails with
+# EPIPE (the write to its already-dead stdin). Chowning /root/.local isn't
+# enough either - /root itself is 0700 root:root, which blocks traversal
+# into /root/.local for uid 10001 regardless of that subdirectory's own
+# ownership (every path component needs +x for the new owner; confirmed
+# live, "permission denied" persisted after chowning /root/.local alone).
+# /root has to be chowned too.
 #
 # This base is Debian bookworm, whose own apt nodejs package is 18.x -
 # too old for supergateway/the MCP SDK's use of the global WebCrypto API
@@ -28,7 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && rm -rf /var/lib/apt/lists/*
 RUN npm install -g supergateway@3 && npm cache clean --force
 
-RUN chown -R 10001:10001 /app /root/.local
+RUN chown -R 10001:10001 /app /root
 
 EXPOSE 8080
 # Upstream's own ENTRYPOINT (mcp-server-git) must be cleared, or this CMD
