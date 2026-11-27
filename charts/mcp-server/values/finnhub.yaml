@@ -1,0 +1,27 @@
+# finnhub MCP server
+# npm wrapper image (dockerfiles/finnhub) bridging @cyanheads/finnhub-mcp-server
+# to streamable HTTP via supergateway.
+
+image:
+  repository: ghcr.io/lfoss0612/mcp-finnhub
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+# Create this Secret out-of-band before syncing, e.g.:
+#   kubectl -n mcp create secret generic finnhub-mcp-env \
+#     --from-literal=FINNHUB_API_KEY=...
+envFromSecrets:
+  - finnhub-mcp-env
+
+ingress:
+  enabled: false
+  className: nginx
+  host: finnhub.mcp.homelab.local
+  tls:
+    enabled: false
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

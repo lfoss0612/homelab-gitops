@@ -186,6 +186,15 @@ spec:
               url: http://mcp-clickup.mcp.svc.cluster.local:80/mcp
               transport: http
               description: ClickUp tasks, spaces, lists, docs and more
+            # @cyanheads/finnhub-mcp-server (Apache-2.0, free), wrapped via
+            # supergateway. Replaces morningstar (removed - needed a paid
+            # account). Free Finnhub tier: US equities, 60 req/min, personal
+            # use only. Auth is a plain Finnhub API key, held in the pod's
+            # own Secret (finnhub-mcp-env), not a litellm-level bearer token.
+            finnhub:
+              url: http://mcp-finnhub.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Finnhub stock quotes, fundamentals, earnings, news and analyst recommendations
             # Postman's hosted MCP server (the old stdio pod has no Service, so
             # LiteLLM can't reach it). API-key auth via Bearer, key from env
             # POSTMAN_API_KEY (see extraEnvVars). /mcp is Full mode; use /minimal

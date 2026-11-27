@@ -48,7 +48,7 @@ diagrams, change-flow). Read those before deep work; don't duplicate them here.
   `CreateContainerConfigError` until the Secret exists.
 - **Adding an MCP server** = new `charts/mcp-server/values/<name>.yaml` +
   `argocd/apps/mcp-<name>.yaml`; the `add-gitops-app` skill handles the wiring.
-- **npm-only servers** (paypal, clickup, argocd) have no upstream image; they use
+- **npm-only servers** (paypal, clickup, argocd, finnhub) have no upstream image; they use
   wrapper Dockerfiles in `dockerfiles/<name>/` built to `ghcr.io/lfoss0612/mcp-<name>`
   by `.github/workflows/build-mcp-wrappers.yaml` on push to `main`.
 
