@@ -5,7 +5,11 @@
 # Free Finnhub tier is 60 req/min, for personal use only (no redistributing
 # Finnhub data to third parties per Finnhub's ToS) - fine for this gateway's
 # own use, not a public-facing resale of the data.
-FROM node:22-alpine
+#
+# Needs Node >=24: its @cyanheads/mcp-ts-core dependency refuses to start
+# on Node 22 (the version every other wrapper here uses) - confirmed live,
+# "Configuration error - server failed to start... requires Node.js >=24.0.0".
+FROM node:24-alpine
 
 RUN npm install --global supergateway@3 @cyanheads/finnhub-mcp-server@0.2.1 \
     && npm cache clean --force
