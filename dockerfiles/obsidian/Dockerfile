@@ -8,9 +8,17 @@
 # Same uv-built /app/.venv layout as mcp/git - proactively fixing
 # permissions for this chart's forced non-root uid 10001 to avoid the same
 # "permission denied" that hit the git wrapper.
+#
+# Same Debian bookworm base as mcp/git, whose own apt nodejs package (18.x)
+# is too old for supergateway/the MCP SDK's global WebCrypto API (stable
+# only from Node 19+) - confirmed on the git wrapper
+# ("ReferenceError: crypto is not defined"), fixed proactively here the
+# same way: NodeSource for a current LTS instead of Debian's own package.
 FROM mcp/obsidian:latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 RUN npm install -g supergateway@3 && npm cache clean --force
 
