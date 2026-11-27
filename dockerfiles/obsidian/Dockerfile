@@ -17,6 +17,9 @@ RUN npm install -g supergateway@3 && npm cache clean --force
 RUN chown -R 10001:10001 /app
 
 EXPOSE 8080
+# Upstream's own ENTRYPOINT (mcp-obsidian) must be cleared, or this CMD
+# becomes its arguments instead of replacing it.
+ENTRYPOINT []
 CMD ["supergateway", \
      "--stdio", "mcp-obsidian", \
      "--outputTransport", "streamableHttp", \

@@ -10,6 +10,10 @@ RUN npm install -g supergateway@3 && npm cache clean --force
 RUN chown -R 10001:10001 /app
 
 EXPOSE 8080
+# Upstream's own ENTRYPOINT (node dist/index.js) must be cleared, or this
+# CMD becomes its arguments instead of replacing it - confirmed live: the
+# pod ran the memory server directly on stdio with no supergateway at all.
+ENTRYPOINT []
 CMD ["supergateway", \
      "--stdio", "node dist/index.js", \
      "--outputTransport", "streamableHttp", \
