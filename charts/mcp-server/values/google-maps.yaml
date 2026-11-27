@@ -19,3 +19,10 @@ envFromSecrets:
 # Wrapper images serve /healthz via supergateway.
 probes:
   enabled: true
+
+# This server has no auth of its own and every call is billed to the Google
+# Maps API key, so only the litellm namespace (the MCP gateway) may connect.
+networkPolicy:
+  enabled: true
+  allowedNamespaces:
+    - litellm
