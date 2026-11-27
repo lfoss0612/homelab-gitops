@@ -49,10 +49,12 @@ diagrams, change-flow). Read those before deep work; don't duplicate them here.
 - **Adding an MCP server** = new `charts/mcp-server/values/<name>.yaml` +
   `argocd/apps/mcp-<name>.yaml`; the `add-gitops-app` skill handles the wiring.
 - **stdio-only servers get bridged to HTTP via supergateway**, not left stdio-only, unless
-  they're redundant with an existing hosted entry (github's stdio pod vs. the hosted GitHub
-  MCP server) or there's no real backend to connect to (obsidian was removed: it needs a
-  running Obsidian app with the Local REST API plugin, and this homelab only has the vault
-  as a plain git repo). `dockerfiles/<name>/` wraps them: npm-only servers (paypal, clickup,
+  they're redundant with an existing hosted entry (github's stdio pod was removed for this -
+  GitHub is already registered via the hosted GitHub MCP server) or there's no real backend
+  to connect to (obsidian was removed too: it needs a running Obsidian app with the Local
+  REST API plugin, and this homelab only has the vault as a plain git repo). There are no
+  stdio-only servers left in this repo as a result. `dockerfiles/<name>/` wraps the rest:
+  npm-only servers (paypal, clickup,
   argocd, finnhub) install the npm package directly; others (memory, sequentialthinking, git,
   python-refactoring, code-interpreter, google-maps, proxmox, dockerhub) wrap an existing
   `mcp/<name>` upstream image, clearing its own `ENTRYPOINT` first (or this wrapper's CMD
