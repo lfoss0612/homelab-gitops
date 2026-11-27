@@ -15,6 +15,17 @@ containerPort: 8000
 env:
   - name: WORKSPACE_MCP_CREDENTIALS_DIR
     value: /home/mcp/.credentials
+  # The image defaults the base URI to http://0.0.0.0, which makes the OAuth
+  # redirect http://0.0.0.0:8000/oauth2callback: unreachable from a browser and
+  # rejected by Google. Pin it to loopback and authorize through a port-forward:
+  #   kubectl -n mcp port-forward svc/mcp-google-workspace 8000:80
+  # then register http://localhost:8000/oauth2callback as an authorized redirect
+  # URI on the Google OAuth client (Web application type; Desktop clients accept
+  # loopback redirects automatically).
+  - name: WORKSPACE_MCP_BASE_URI
+    value: http://localhost
+  - name: GOOGLE_OAUTH_REDIRECT_URI
+    value: http://localhost:8000/oauth2callback
 
 persistence:
   enabled: true
