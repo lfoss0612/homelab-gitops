@@ -1,10 +1,19 @@
 # huggingface MCP server
 # Hugging Face MCP server. Serves HTTP (web UI plus /mcp and /sse endpoints) on :3000.
+# Rejects any Host header outside its allowlist (loopback only by default -
+# confirmed live: "Host mcp-huggingface.mcp.svc.cluster.local is not
+# allowed"), so every in-cluster caller including LiteLLM gets a 403.
+# MCP_ALLOWED_HOSTS (see packages/app/dist/server/utils/inbound-request-
+# security.js) widens it to the Service's cluster-local DNS name.
 
 image:
   repository: ghcr.io/evalstate/hf-mcp-server
   tag: latest
   pullPolicy: Always
+
+env:
+  - name: MCP_ALLOWED_HOSTS
+    value: "mcp-huggingface.mcp.svc.cluster.local"
 
 containerPort: 3000
 
