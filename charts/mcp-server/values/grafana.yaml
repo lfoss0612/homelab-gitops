@@ -1,10 +1,24 @@
 # grafana MCP server
-# Official Grafana MCP server. Serves streamable HTTP on :8000 by default.
+# Official Grafana MCP server. The image's own default args start it on SSE
+# transport (confirmed live: "Starting Grafana MCP server using SSE
+# transport"), which LiteLLM's streamable-HTTP MCP client can't speak to -
+# override to streamable-http explicitly. Its default -allowed-hosts also
+# only accepts loopback variants of -address, which rejects every in-cluster
+# caller (same Host-header rejection pattern hit on huggingface) - widen it
+# to the Service's cluster-local DNS name.
 
 image:
   repository: mcp/grafana
   tag: latest
   pullPolicy: Always
+
+args:
+  - "-t"
+  - "streamable-http"
+  - "-address"
+  - "0.0.0.0:8000"
+  - "-allowed-hosts"
+  - "mcp-grafana.mcp.svc.cluster.local:8000,localhost:8000"
 
 containerPort: 8000
 
