@@ -97,7 +97,7 @@ in `CreateContainerConfigError` until the Secret exists). The exact
 ## Servers
 
 All image references were verified to exist in their registries (2026-07).
-`morningstar` was removed: no container image or npm package exists.
+`morningstar` was removed: it required an existing paid Morningstar account/license.
 `postman` was removed: the stdio-only pod was unreachable; LiteLLM uses Postman's hosted MCP server instead.
 
 ### HTTP-native (Service enabled; Ingress available, disabled by default)
@@ -113,6 +113,7 @@ All image references were verified to exist in their registries (2026-07).
 | paypal | `ghcr.io/lfoss0612/mcp-paypal` (wrapper) | 8080 | `PAYPAL_ACCESS_TOKEN`, `PAYPAL_ENVIRONMENT` |
 | clickup | `ghcr.io/lfoss0612/mcp-clickup` (wrapper) | 8080 | `CLICKUP_PERSONAL_TOKEN` |
 | argocd | `ghcr.io/lfoss0612/mcp-argocd` (wrapper) | 8080 | `ARGOCD_BASE_URL`, `ARGOCD_API_TOKEN` |
+| finnhub | `ghcr.io/lfoss0612/mcp-finnhub` (wrapper) | 8080 | `FINNHUB_API_KEY` |
 
 ### stdio-only (no Service; kept alive with stdin/tty)
 
@@ -136,7 +137,7 @@ wrappers in `dockerfiles/` do.
 
 ## Wrapper images (npm-only servers)
 
-PayPal, ClickUp, and Argo CD ship as npm packages, not container images.
+PayPal, ClickUp, Argo CD, and Finnhub ship as npm packages, not container images.
 `dockerfiles/<name>/Dockerfile` pins each package and bridges its stdio
 transport to streamable HTTP (port 8080, health endpoint `/healthz`) via
 supergateway. The GitHub Actions workflow builds and pushes them to
