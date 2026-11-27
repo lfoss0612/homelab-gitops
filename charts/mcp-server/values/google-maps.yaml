@@ -1,20 +1,21 @@
 # google-maps MCP server
-# Google Maps MCP server (stdio transport).
+# Official modelcontextprotocol/servers Google Maps server (stdio
+# upstream), bridged to streamable HTTP via supergateway
+# (dockerfiles/google-maps).
 
 image:
-  repository: mcp/google-maps
+  repository: ghcr.io/lfoss0612/mcp-google-maps
   tag: latest
   pullPolicy: Always
 
-# stdio-only server: no network endpoint; kept alive via stdin/tty.
-stdio: true
-containerPort: null
-
-service:
-  enabled: false
+containerPort: 8080
 
 # Create this Secret out-of-band before syncing, e.g.:
 #   kubectl -n mcp create secret generic google-maps-mcp-env \
 #     --from-literal=GOOGLE_MAPS_API_KEY=...
 envFromSecrets:
   - google-maps-mcp-env
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

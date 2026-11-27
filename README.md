@@ -32,7 +32,7 @@ charts/mcp-server/         # reusable single-server Helm chart
   values/<name>.yaml       # per-server overrides (image, port, secrets, ingress)
   templates/               # Deployment, Service, Ingress, Secret, ServiceAccount
 dockerfiles/
-  paypal/  clickup/  argocd/   # pinned wrapper Dockerfiles for npm-only servers
+  paypal/  clickup/  argocd/  finnhub/  ...  # pinned wrapper Dockerfiles (stdio -> HTTP)
   Dockerfile.npm-wrapper      # generic wrapper for experimenting with new servers
 .github/workflows/
   build-mcp-wrappers.yaml     # builds & pushes wrapper images to ghcr.io
@@ -114,33 +114,52 @@ All image references were verified to exist in their registries (2026-07).
 | clickup | `ghcr.io/lfoss0612/mcp-clickup` (wrapper) | 8080 | `CLICKUP_PERSONAL_TOKEN` |
 | argocd | `ghcr.io/lfoss0612/mcp-argocd` (wrapper) | 8080 | `ARGOCD_BASE_URL`, `ARGOCD_API_TOKEN` |
 | finnhub | `ghcr.io/lfoss0612/mcp-finnhub` (wrapper) | 8080 | `FINNHUB_API_KEY` |
+| memory | `ghcr.io/lfoss0612/mcp-memory` (wrapper) | 8080 | — |
+| sequentialthinking | `ghcr.io/lfoss0612/mcp-sequentialthinking` (wrapper) | 8080 | — |
+| git | `ghcr.io/lfoss0612/mcp-git` (wrapper) | 8080 | — |
+| obsidian | `ghcr.io/lfoss0612/mcp-obsidian` (wrapper) | 8080 | `OBSIDIAN_API_KEY`, `OBSIDIAN_HOST` |
+| python-refactoring | `ghcr.io/lfoss0612/mcp-python-refactoring` (wrapper) | 8080 | — |
+| code-interpreter | `ghcr.io/lfoss0612/mcp-code-interpreter` (wrapper) | 8080 | — |
+| google-maps | `ghcr.io/lfoss0612/mcp-google-maps` (wrapper) | 8080 | `GOOGLE_MAPS_API_KEY` |
+| proxmox | `ghcr.io/lfoss0612/mcp-proxmox` (wrapper) | 8080 | `PROXMOX_HOST`, `PROXMOX_USER`, `PROXMOX_TOKEN_NAME`, `PROXMOX_TOKEN_VALUE` |
+| dockerhub | `ghcr.io/lfoss0612/mcp-dockerhub` (wrapper) | 8080 | `HUB_USERNAME`, `HUB_PAT_TOKEN` |
 
 ### stdio-only (no Service; kept alive with stdin/tty)
 
 | Server | Image | Secret (`<name>-mcp-env`) |
 |---|---|---|
 | github | `ghcr.io/github/github-mcp-server` | `GITHUB_PERSONAL_ACCESS_TOKEN` |
-| memory | `mcp/memory` | — |
-| sequentialthinking | `mcp/sequentialthinking` | — |
-| git | `mcp/git` | — |
-| obsidian | `mcp/obsidian` | `OBSIDIAN_API_KEY`, `OBSIDIAN_HOST` |
-| python-refactoring | `mcp/mcp-python-refactoring` | — |
-| code-interpreter | `mcp/mcp-code-interpreter` | — |
-| google-maps | `mcp/google-maps` | `GOOGLE_MAPS_API_KEY` |
-| proxmox | `mcp/proxmox` | `PROXMOX_HOST`, `PROXMOX_USER`, `PROXMOX_TOKEN_NAME`, `PROXMOX_TOKEN_VALUE` |
-| dockerhub | `mcp/dockerhub` | `HUB_USERNAME`, `HUB_PAT_TOKEN` |
+
+`github`'s stdio pod is intentionally left unwrapped/unregistered: GitHub is
+already registered via the official hosted MCP server (see `litellm.yaml`),
+so wrapping this one too would just be a redundant second GitHub entry.
 
 stdio-only servers have no network endpoint — MCP clients cannot reach them
 over the cluster network. To expose one over HTTP, wrap it with
-[supergateway](https://github.com/supercorp-ai/supergateway) the way the npm
+[supergateway](https://github.com/supercorp-ai/supergateway) the way the
 wrappers in `dockerfiles/` do.
 
-## Wrapper images (npm-only servers)
+## Wrapper images (stdio bridged to HTTP)
 
-PayPal, ClickUp, Argo CD, and Finnhub ship as npm packages, not container images.
-`dockerfiles/<name>/Dockerfile` pins each package and bridges its stdio
-transport to streamable HTTP (port 8080, health endpoint `/healthz`) via
-supergateway. The GitHub Actions workflow builds and pushes them to
+Every server in the HTTP-native table above except the ones with their own
+upstream image (grafana, playwright, huggingface, kubernetes, linkedin,
+prometheus) has no streamable-HTTP transport of its own, so
+`dockerfiles/<name>/Dockerfile` bridges its stdio transport to HTTP (port
+8080, health endpoint `/healthz`) via supergateway:
+
+- **npm-only** (paypal, clickup, argocd, finnhub): no upstream image at all;
+  the Dockerfile installs the npm package directly.
+- **wrapping an existing upstream image** (memory, sequentialthinking, git,
+  obsidian, python-refactoring, code-interpreter, google-maps, proxmox,
+  dockerhub): `FROM mcp/<name>` (or equivalent), with node+npm added on top
+  (copied from `node:22-slim` for the Debian-based ones, since an
+  Alpine/musl node binary won't run there) so supergateway can wrap the
+  image's own entrypoint unchanged. A couple of upstream images (git,
+  code-interpreter) ship file permissions that don't survive this chart's
+  forced non-root `runAsUser: 10001` — fixed with a `chown` in the wrapper
+  layer, not by weakening the chart's security context.
+
+The GitHub Actions workflow builds and pushes all of them to
 `ghcr.io/lfoss0612/mcp-<name>` on every push to `main` that touches
 `dockerfiles/` — make the ghcr packages public (or add an imagePullSecret)
 after the first push.

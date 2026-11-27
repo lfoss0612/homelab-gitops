@@ -1,14 +1,14 @@
 # python-refactoring MCP server
-# Python refactoring MCP server (stdio transport).
+# Python refactoring MCP server (stdio upstream), bridged to streamable
+# HTTP via supergateway (dockerfiles/python-refactoring).
 
 image:
-  repository: mcp/mcp-python-refactoring
+  repository: ghcr.io/lfoss0612/mcp-python-refactoring
   tag: latest
   pullPolicy: Always
 
-# stdio-only server: no network endpoint; kept alive via stdin/tty.
-stdio: true
-containerPort: null
+containerPort: 8080
 
-service:
-  enabled: false
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

@@ -48,9 +48,19 @@ diagrams, change-flow). Read those before deep work; don't duplicate them here.
   `CreateContainerConfigError` until the Secret exists.
 - **Adding an MCP server** = new `charts/mcp-server/values/<name>.yaml` +
   `argocd/apps/mcp-<name>.yaml`; the `add-gitops-app` skill handles the wiring.
-- **npm-only servers** (paypal, clickup, argocd, finnhub) have no upstream image; they use
-  wrapper Dockerfiles in `dockerfiles/<name>/` built to `ghcr.io/lfoss0612/mcp-<name>`
-  by `.github/workflows/build-mcp-wrappers.yaml` on push to `main`.
+- **stdio-only servers get bridged to HTTP via supergateway**, not left stdio-only, unless
+  they're redundant with an existing hosted entry (github's stdio pod vs. the hosted GitHub
+  MCP server). `dockerfiles/<name>/` wraps them: npm-only servers (paypal, clickup, argocd,
+  finnhub) install the npm package directly; others (memory, sequentialthinking, git,
+  obsidian, python-refactoring, code-interpreter, google-maps, proxmox, dockerhub) wrap an
+  existing `mcp/<name>` upstream image, with node+npm added on top for Debian-based ones
+  (copied from `node:22-slim` — an Alpine/musl node binary won't run on glibc). Built to
+  `ghcr.io/lfoss0612/mcp-<name>` by `.github/workflows/build-mcp-wrappers.yaml` on push to
+  `main`.
+- **This chart forces `runAsUser: 10001`** on every pod regardless of the image's own user.
+  A wrapped upstream image whose files aren't world-readable/executable at that uid fails
+  with "permission denied" (hit this with git and code-interpreter) — fix with `chown` in
+  the wrapper Dockerfile, never by weakening `podSecurityContext` in the shared chart.
 
 ## Git in this repo (NFS workaround)
 

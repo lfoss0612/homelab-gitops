@@ -195,6 +195,46 @@ spec:
               url: http://mcp-finnhub.mcp.svc.cluster.local:80/mcp
               transport: http
               description: Finnhub stock quotes, fundamentals, earnings, news and analyst recommendations
+            # The remaining stdio-only reference/community servers, wrapped via
+            # supergateway the same way (dockerfiles/<name>). github's stdio pod
+            # is deliberately NOT wrapped/registered here - redundant with the
+            # hosted github entry above.
+            memory:
+              url: http://mcp-memory.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Knowledge-graph memory across a conversation
+            sequentialthinking:
+              url: http://mcp-sequentialthinking.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Step-by-step sequential reasoning scratchpad
+            git:
+              url: http://mcp-git.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Git repository operations (log, diff, status, commit)
+            obsidian:
+              url: http://mcp-obsidian.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Obsidian vault notes (via the Local REST API plugin)
+            python_refactoring:
+              url: http://mcp-python-refactoring.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Python code refactoring analysis
+            code_interpreter:
+              url: http://mcp-code-interpreter.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Sandboxed Python code execution
+            google_maps:
+              url: http://mcp-google-maps.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Google Maps geocoding, directions and places
+            proxmox:
+              url: http://mcp-proxmox.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Proxmox VE infrastructure management
+            dockerhub:
+              url: http://mcp-dockerhub.mcp.svc.cluster.local:80/mcp
+              transport: http
+              description: Docker Hub image and repository info
             # Postman's hosted MCP server (the old stdio pod has no Service, so
             # LiteLLM can't reach it). API-key auth via Bearer, key from env
             # POSTMAN_API_KEY (see extraEnvVars). /mcp is Full mode; use /minimal

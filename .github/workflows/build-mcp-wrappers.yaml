@@ -18,7 +18,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        server: [paypal, argocd, google-workspace, opnsense, fetch, clickup, finnhub]
+        server:
+          [
+            paypal,
+            argocd,
+            google-workspace,
+            opnsense,
+            fetch,
+            clickup,
+            finnhub,
+            memory,
+            sequentialthinking,
+            git,
+            obsidian,
+            python-refactoring,
+            code-interpreter,
+            google-maps,
+            proxmox,
+            dockerhub,
+          ]
     steps:
       - uses: actions/checkout@v4
 
