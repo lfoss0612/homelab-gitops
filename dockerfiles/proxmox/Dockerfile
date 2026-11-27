@@ -1,18 +1,16 @@
 # Proxmox MCP server (mcp/proxmox, stdio, python:slim/Debian based - no
-# node), bridged to streamable HTTP via supergateway. Node/npm copied from
-# node:22-slim (glibc, matches this Debian base). Upstream ends on
-# "USER mcp" - switch back to root to install, then fix ownership for this
-# chart's forced runAsUser 10001 (not that image's own "mcp" uid).
-FROM node:22-slim AS nodejs
-
+# node), bridged to streamable HTTP via supergateway. Node/npm installed
+# via apt (Debian's own packages, not a multi-stage copy from a node image
+# - copying just the node/npm binaries leaves npm's symlink-relative
+# `require('../lib/cli.js')` unable to resolve, confirmed by a live CI
+# build failure). Upstream ends on "USER mcp" - switch back to root to
+# install, then fix ownership for this chart's forced runAsUser 10001
+# (not that image's own "mcp" uid).
 FROM mcp/proxmox:latest
 
 USER root
-COPY --from=nodejs /usr/local/bin/node /usr/local/bin/node
-COPY --from=nodejs /usr/local/lib/node_modules /usr/local/lib/node_modules
-COPY --from=nodejs /usr/local/bin/npm /usr/local/bin/npm
-COPY --from=nodejs /usr/local/bin/npx /usr/local/bin/npx
-
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+    && rm -rf /var/lib/apt/lists/*
 RUN npm install -g supergateway@3 && npm cache clean --force
 
 RUN chown -R 10001:10001 /usr/local
