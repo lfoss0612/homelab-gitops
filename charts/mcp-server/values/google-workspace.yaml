@@ -26,6 +26,19 @@ env:
     value: http://localhost
   - name: GOOGLE_OAUTH_REDIRECT_URI
     value: http://localhost:8000/oauth2callback
+  # workspace-mcp binds to 127.0.0.1 unless told otherwise, because its legacy
+  # streamable-http mode has no auth of its own. Bind to all interfaces so the
+  # LiteLLM gateway can reach it, and rely on the networkPolicy below to limit
+  # who can connect.
+  - name: WORKSPACE_MCP_HOST
+    value: 0.0.0.0
+
+# Only the litellm namespace (the MCP gateway) may connect. This server holds
+# an authorized Gmail/Calendar/Drive session with write tools and has no auth.
+networkPolicy:
+  enabled: true
+  allowedNamespaces:
+    - litellm
 
 persistence:
   enabled: true

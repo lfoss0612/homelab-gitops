@@ -64,6 +64,14 @@ probes:
   initialDelaySeconds: 5
   periodSeconds: 15
 
+# Optional ingress restriction. When enabled, only pods in the listed
+# namespaces can reach the server's container port (everything else is dropped
+# by the CNI). Use for servers with no auth of their own that hold real
+# credentials (e.g. google-workspace).
+networkPolicy:
+  enabled: false
+  allowedNamespaces: []
+
 resources:
   requests:
     cpu: 50m
