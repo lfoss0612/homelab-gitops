@@ -211,10 +211,6 @@ spec:
               url: http://mcp-git.mcp.svc.cluster.local:80/mcp
               transport: http
               description: Git repository operations (log, diff, status, commit)
-            obsidian:
-              url: http://mcp-obsidian.mcp.svc.cluster.local:80/mcp
-              transport: http
-              description: Obsidian vault notes (via the Local REST API plugin)
             python_refactoring:
               url: http://mcp-python-refactoring.mcp.svc.cluster.local:80/mcp
               transport: http
