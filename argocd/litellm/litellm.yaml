@@ -41,6 +41,11 @@ spec:
           value: http://vllm.vllm.svc.cluster.local:8000/v1
         - name: proxy_config.general_settings.store_model_in_db
           value: "True"
+        # Disable the shared static UI login (UI_USERNAME/UI_PASSWORD, or the
+        # master key when UI_PASSWORD is unset). Admins sign in with their own
+        # named account instead. The master key still works for API calls.
+        - name: proxy_config.general_settings.disable_env_credential_login
+          value: "True"
         - name: proxy_config.litellm_settings.drop_params
           value: "True"  
         - name: masterkeySecretName
