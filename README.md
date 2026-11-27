@@ -102,6 +102,9 @@ All image references were verified to exist in their registries (2026-07).
 `obsidian` was removed: it talks to the Obsidian Local REST API community plugin, which
 needs a running Obsidian app on the network to connect to - this homelab only has the vault
 as a plain git repo (`homelab-vault`), with no Obsidian app instance anywhere to be a server.
+The stdio-only `github` pod was also removed: GitHub is already registered via the official
+hosted MCP server (see `litellm.yaml`), so a second, unreachable stdio GitHub pod was dead
+weight.
 
 ### HTTP-native (Service enabled; Ingress available, disabled by default)
 
@@ -126,20 +129,11 @@ as a plain git repo (`homelab-vault`), with no Obsidian app instance anywhere to
 | proxmox | `ghcr.io/lfoss0612/mcp-proxmox` (wrapper) | 8080 | `PROXMOX_HOST`, `PROXMOX_USER`, `PROXMOX_TOKEN_NAME`, `PROXMOX_TOKEN_VALUE` |
 | dockerhub | `ghcr.io/lfoss0612/mcp-dockerhub` (wrapper) | 8080 | `HUB_USERNAME`, `HUB_PAT_TOKEN` |
 
-### stdio-only (no Service; kept alive with stdin/tty)
-
-| Server | Image | Secret (`<name>-mcp-env`) |
-|---|---|---|
-| github | `ghcr.io/github/github-mcp-server` | `GITHUB_PERSONAL_ACCESS_TOKEN` |
-
-`github`'s stdio pod is intentionally left unwrapped/unregistered: GitHub is
-already registered via the official hosted MCP server (see `litellm.yaml`),
-so wrapping this one too would just be a redundant second GitHub entry.
-
-stdio-only servers have no network endpoint — MCP clients cannot reach them
-over the cluster network. To expose one over HTTP, wrap it with
-[supergateway](https://github.com/supercorp-ai/supergateway) the way the
-wrappers in `dockerfiles/` do.
+There are no stdio-only servers left in this repo — every server either has its own HTTP
+transport, is a hosted MCP server, or got wrapped (see below). A stdio-only server has no
+network endpoint, so MCP clients can't reach it over the cluster network; to add a new one,
+either wrap it with [supergateway](https://github.com/supercorp-ai/supergateway) the way
+`dockerfiles/` does, or confirm it's genuinely redundant/unreachable before adding it at all.
 
 ## Wrapper images (stdio bridged to HTTP)
 
