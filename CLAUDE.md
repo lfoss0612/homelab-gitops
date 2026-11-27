@@ -50,13 +50,17 @@ diagrams, change-flow). Read those before deep work; don't duplicate them here.
   `argocd/apps/mcp-<name>.yaml`; the `add-gitops-app` skill handles the wiring.
 - **stdio-only servers get bridged to HTTP via supergateway**, not left stdio-only, unless
   they're redundant with an existing hosted entry (github's stdio pod vs. the hosted GitHub
-  MCP server). `dockerfiles/<name>/` wraps them: npm-only servers (paypal, clickup, argocd,
-  finnhub) install the npm package directly; others (memory, sequentialthinking, git,
-  obsidian, python-refactoring, code-interpreter, google-maps, proxmox, dockerhub) wrap an
-  existing `mcp/<name>` upstream image, with node+npm added on top for Debian-based ones
-  (copied from `node:22-slim` — an Alpine/musl node binary won't run on glibc). Built to
-  `ghcr.io/lfoss0612/mcp-<name>` by `.github/workflows/build-mcp-wrappers.yaml` on push to
-  `main`.
+  MCP server) or there's no real backend to connect to (obsidian was removed: it needs a
+  running Obsidian app with the Local REST API plugin, and this homelab only has the vault
+  as a plain git repo). `dockerfiles/<name>/` wraps them: npm-only servers (paypal, clickup,
+  argocd, finnhub) install the npm package directly; others (memory, sequentialthinking, git,
+  python-refactoring, code-interpreter, google-maps, proxmox, dockerhub) wrap an existing
+  `mcp/<name>` upstream image, clearing its own `ENTRYPOINT` first (or this wrapper's CMD
+  becomes arguments to it instead of replacing it) and adding node+npm on top for
+  Debian-based ones with none — apt, or NodeSource for a current LTS where Debian's own
+  package is too old for the MCP SDK's global WebCrypto API (hit this on bookworm's node 18).
+  Built to `ghcr.io/lfoss0612/mcp-<name>` by `.github/workflows/build-mcp-wrappers.yaml` on
+  push to `main`.
 - **This chart forces `runAsUser: 10001`** on every pod regardless of the image's own user.
   A wrapped upstream image whose files aren't world-readable/executable at that uid fails
   with "permission denied" (hit this with git and code-interpreter) — fix with `chown` in

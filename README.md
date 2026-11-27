@@ -99,6 +99,9 @@ in `CreateContainerConfigError` until the Secret exists). The exact
 All image references were verified to exist in their registries (2026-07).
 `morningstar` was removed: it required an existing paid Morningstar account/license.
 `postman` was removed: the stdio-only pod was unreachable; LiteLLM uses Postman's hosted MCP server instead.
+`obsidian` was removed: it talks to the Obsidian Local REST API community plugin, which
+needs a running Obsidian app on the network to connect to - this homelab only has the vault
+as a plain git repo (`homelab-vault`), with no Obsidian app instance anywhere to be a server.
 
 ### HTTP-native (Service enabled; Ingress available, disabled by default)
 
@@ -117,7 +120,6 @@ All image references were verified to exist in their registries (2026-07).
 | memory | `ghcr.io/lfoss0612/mcp-memory` (wrapper) | 8080 | — |
 | sequentialthinking | `ghcr.io/lfoss0612/mcp-sequentialthinking` (wrapper) | 8080 | — |
 | git | `ghcr.io/lfoss0612/mcp-git` (wrapper) | 8080 | — |
-| obsidian | `ghcr.io/lfoss0612/mcp-obsidian` (wrapper) | 8080 | `OBSIDIAN_API_KEY`, `OBSIDIAN_HOST` |
 | python-refactoring | `ghcr.io/lfoss0612/mcp-python-refactoring` (wrapper) | 8080 | — |
 | code-interpreter | `ghcr.io/lfoss0612/mcp-code-interpreter` (wrapper) | 8080 | — |
 | google-maps | `ghcr.io/lfoss0612/mcp-google-maps` (wrapper) | 8080 | `GOOGLE_MAPS_API_KEY` |
@@ -150,14 +152,17 @@ prometheus) has no streamable-HTTP transport of its own, so
 - **npm-only** (paypal, clickup, argocd, finnhub): no upstream image at all;
   the Dockerfile installs the npm package directly.
 - **wrapping an existing upstream image** (memory, sequentialthinking, git,
-  obsidian, python-refactoring, code-interpreter, google-maps, proxmox,
-  dockerhub): `FROM mcp/<name>` (or equivalent), with node+npm added on top
-  (copied from `node:22-slim` for the Debian-based ones, since an
-  Alpine/musl node binary won't run there) so supergateway can wrap the
-  image's own entrypoint unchanged. A couple of upstream images (git,
-  code-interpreter) ship file permissions that don't survive this chart's
-  forced non-root `runAsUser: 10001` — fixed with a `chown` in the wrapper
-  layer, not by weakening the chart's security context.
+  python-refactoring, code-interpreter, google-maps, proxmox, dockerhub):
+  `FROM mcp/<name>` (or equivalent). The upstream image's own `ENTRYPOINT`
+  must be cleared (`ENTRYPOINT []`) before this wrapper's `CMD`, or the
+  supergateway invocation becomes arguments to it instead of replacing it.
+  Debian-based ones with no node at all get it via apt — NodeSource for a
+  current LTS where Debian's own package is too old for the MCP SDK's
+  global WebCrypto API (hit this on bookworm's node 18). A couple of
+  upstream images (git, code-interpreter) also ship file permissions that
+  don't survive this chart's forced non-root `runAsUser: 10001` — fixed
+  with a `chown` in the wrapper layer, not by weakening the chart's
+  security context.
 
 The GitHub Actions workflow builds and pushes all of them to
 `ghcr.io/lfoss0612/mcp-<name>` on every push to `main` that touches

@@ -30,7 +30,6 @@ jobs:
             memory,
             sequentialthinking,
             git,
-            obsidian,
             python-refactoring,
             code-interpreter,
             google-maps,
