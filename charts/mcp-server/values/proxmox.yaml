@@ -1,17 +1,13 @@
 # proxmox MCP server
-# Proxmox MCP server (stdio transport).
+# Proxmox VE management server (stdio upstream), bridged to streamable
+# HTTP via supergateway (dockerfiles/proxmox).
 
 image:
-  repository: mcp/proxmox
+  repository: ghcr.io/lfoss0612/mcp-proxmox
   tag: latest
   pullPolicy: Always
 
-# stdio-only server: no network endpoint; kept alive via stdin/tty.
-stdio: true
-containerPort: null
-
-service:
-  enabled: false
+containerPort: 8080
 
 # Create this Secret out-of-band before syncing, e.g.:
 #   kubectl -n mcp create secret generic proxmox-mcp-env \
@@ -21,3 +17,7 @@ service:
 #     --from-literal=PROXMOX_TOKEN_VALUE=...
 envFromSecrets:
   - proxmox-mcp-env
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

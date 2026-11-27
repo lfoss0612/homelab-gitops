@@ -1,17 +1,13 @@
 # dockerhub MCP server
-# Docker Hub MCP server (stdio transport).
+# Docker's official Docker Hub MCP server (stdio upstream), bridged to
+# streamable HTTP via supergateway (dockerfiles/dockerhub).
 
 image:
-  repository: mcp/dockerhub
+  repository: ghcr.io/lfoss0612/mcp-dockerhub
   tag: latest
   pullPolicy: Always
 
-# stdio-only server: no network endpoint; kept alive via stdin/tty.
-stdio: true
-containerPort: null
-
-service:
-  enabled: false
+containerPort: 8080
 
 # Create this Secret out-of-band before syncing, e.g.:
 #   kubectl -n mcp create secret generic dockerhub-mcp-env \
@@ -19,3 +15,7 @@ service:
 #     --from-literal=HUB_PAT_TOKEN=...
 envFromSecrets:
   - dockerhub-mcp-env
+
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

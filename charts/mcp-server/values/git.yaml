@@ -1,14 +1,14 @@
 # git MCP server
-# Reference git server (stdio transport).
+# Reference git server (stdio upstream), bridged to streamable HTTP via
+# supergateway (dockerfiles/git).
 
 image:
-  repository: mcp/git
+  repository: ghcr.io/lfoss0612/mcp-git
   tag: latest
   pullPolicy: Always
 
-# stdio-only server: no network endpoint; kept alive via stdin/tty.
-stdio: true
-containerPort: null
+containerPort: 8080
 
-service:
-  enabled: false
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true

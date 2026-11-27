@@ -1,14 +1,14 @@
 # memory MCP server
-# Reference knowledge-graph memory server (stdio transport).
+# Reference knowledge-graph memory server (stdio upstream), bridged to
+# streamable HTTP via supergateway (dockerfiles/memory).
 
 image:
-  repository: mcp/memory
+  repository: ghcr.io/lfoss0612/mcp-memory
   tag: latest
   pullPolicy: Always
 
-# stdio-only server: no network endpoint; kept alive via stdin/tty.
-stdio: true
-containerPort: null
+containerPort: 8080
 
-service:
-  enabled: false
+# Wrapper images serve /healthz via supergateway.
+probes:
+  enabled: true
