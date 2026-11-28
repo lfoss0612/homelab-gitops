@@ -6,6 +6,15 @@
 # only accepts loopback variants of -address, which rejects every in-cluster
 # caller (same Host-header rejection pattern hit on huggingface) - widen it
 # to the Service's cluster-local DNS name.
+#
+# The first fix here (PR #22) used "...:8000", the container's own listen
+# port, but LiteLLM reaches this pod through the Service on port 80
+# (argocd/litellm/litellm.yaml), and HTTP clients omit the default port from
+# the Host header - so the incoming Host is the bare hostname with no port,
+# which never matched and every call 403'd (confirmed live in litellm's
+# logs). huggingface's entry (same PR) used the bare hostname and works -
+# matching that pattern here, keeping the :8000 form too for any caller that
+# does hit the pod directly on its container port.
 
 image:
   repository: mcp/grafana
@@ -18,9 +27,12 @@ args:
   - "-address"
   - "0.0.0.0:8000"
   - "-allowed-hosts"
-  - "mcp-grafana.mcp.svc.cluster.local:8000,localhost:8000"
+  - "mcp-grafana.mcp.svc.cluster.local,mcp-grafana.mcp.svc.cluster.local:8000,localhost:8000"
 
 containerPort: 8000
+
+probes:
+  enabled: true
 
 # Create this Secret out-of-band before syncing, e.g.:
 #   kubectl -n mcp create secret generic grafana-mcp-env \
