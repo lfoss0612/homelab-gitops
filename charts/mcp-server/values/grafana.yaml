@@ -31,8 +31,13 @@ args:
 
 containerPort: 8000
 
-probes:
-  enabled: true
+# probes: left disabled deliberately. The chart's probe template has no way
+# to set httpGet.host, so kubelet's liveness/readiness checks hit this pod
+# using its bare IP as the Host header - which never matches the -allowed-
+# hosts list above (by design: a bare IP isn't a name worth allowlisting).
+# Enabling probes made kubelet's own health check 403 and get the pod killed
+# in a loop (confirmed live: "Liveness probe failed: HTTP probe failed with
+# statuscode: 403"). Needs a chart change (templated probe Host) to do safely.
 
 # Create this Secret out-of-band before syncing, e.g.:
 #   kubectl -n mcp create secret generic grafana-mcp-env \
